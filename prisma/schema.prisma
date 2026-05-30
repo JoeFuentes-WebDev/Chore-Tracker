@@ -1,0 +1,122 @@
+// Chore Tracker — Prisma schema
+// Target: Neon (Postgres). Designed for future extensibility:
+// multiple children, trend analytics, notification history.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Creator {
+  PARENT
+  KID
+}
+
+enum TaskStatus {
+  CLAIMED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationStatus {
+  SENT
+  FAILED
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+/// A chore definition. Recurring chores stay pickable; one-time chores
+/// disappear after being claimed.
+model Chore {
+  id        String   @id @default(cuid())
+  name      String
+  emoji     String // single emoji character
+  reward    Decimal  @db.Decimal(10, 2) // USD, e.g. 2.50
+  recurring Boolean // true = always available
+  createdBy Creator
+  isActive  Boolean  @default(true) // soft delete
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks Task[]
+}
+
+/// An instance of a chore being claimed and worked. One Task per chore claim.
+/// A recurring chore can generate many Tasks over time. name/emoji/reward are
+/// snapshotted from the Chore at claim time so later edits don't affect history.
+model Task {
+  id          String     @id @default(cuid())
+  choreId     String? // null if the source chore was deleted
+  name        String // snapshot of chore name at claim time
+  emoji       String // snapshot of emoji at claim time
+  reward      Decimal    @db.Decimal(10, 2) // snapshot of reward at claim time
+  status      TaskStatus
+  claimedAt   DateTime   @default(now())
+  completedAt DateTime? // when kid marked done
+  approvedAt  DateTime? // when parent approved
+  rejectedAt  DateTime? // when parent rejected
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  chore            Chore?            @relation(fields: [choreId], references: [id], onDelete: SetNull)
+  notificationLogs NotificationLog[]
+
+  @@index([status])
+  @@index([choreId])
+}
+
+/// A chore suggested by the kid before parent approval. On approval a Chore is
+/// created and a Task is opened. On rejection the Proposal is soft-deleted.
+model Proposal {
+  id              String         @id @default(cuid())
+  name            String
+  emoji           String
+  suggestedReward Decimal        @db.Decimal(10, 2) // kid-proposed amount
+  approvedReward  Decimal?       @db.Decimal(10, 2) // parent can adjust on approval
+  status          ProposalStatus
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status])
+}
+
+/// Audit trail for every SMS sent. A task status change is never blocked if SMS
+/// fails.
+model NotificationLog {
+  id        String             @id @default(cuid())
+  taskId    String
+  phone     String // destination number
+  message   String // SMS body sent
+  status    NotificationStatus
+  twilioSid String? // Twilio message SID
+  error     String? // error message if FAILED
+  createdAt DateTime           @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+/// Single-row table (id = "singleton"). Stores parent phone and app-level prefs.
+model Settings {
+  id          String   @id @default("singleton")
+  parentPhone String? // E.164 format e.g. +14155551234
+  updatedAt   DateTime @updatedAt
+}
