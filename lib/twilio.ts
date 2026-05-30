@@ -26,6 +26,17 @@ export interface SendSmsResult {
  * Send an SMS via Twilio. Resolves with a result object; never rejects.
  */
 export async function sendSms(_params: SendSmsParams): Promise<SendSmsResult> {
-  // TODO: implement Twilio send + map success/failure into SendSmsResult.
-  throw new Error("Not implemented");
+  try {
+    // TODO: lazily construct Twilio client, call messages.create, return
+    // { success: true, sid } on success.
+    return {
+      success: false,
+      error: "Not implemented",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error sending SMS",
+    };
+  }
 }
