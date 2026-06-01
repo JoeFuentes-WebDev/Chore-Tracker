@@ -1,6 +1,6 @@
-// Chore Tracker — Prisma schema
-// Target: Neon (Postgres). Designed for future extensibility:
-// multiple children, trend analytics, notification history.
+// ChoreTracker — Prisma schema (M1)
+// Target: Neon (Postgres). One family per deployment (TD-05).
+// Single Chore entity with lifecycle status (TD-15).
 
 generator client {
   provider = "prisma-client-js"
@@ -8,28 +8,29 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
 
-enum Creator {
-  PARENT
-  KID
+enum ChoreStatus {
+  AVAILABLE
+  CLAIMED
+  IN_PROGRESS
+  PENDING_APPROVAL
+  APPROVED
 }
 
-enum TaskStatus {
-  CLAIMED
-  PENDING
-  APPROVED
-  REJECTED
+enum ChoreCreator {
+  PARENT
+  CHILD
 }
 
 enum ProposalStatus {
   PENDING
-  APPROVED
+  ACCEPTED
+  COUNTERED
   REJECTED
 }
 
@@ -38,85 +39,97 @@ enum NotificationStatus {
   FAILED
 }
 
+enum NotificationEvent {
+  CHORE_CLAIMED
+  CHORE_UNCLAIMED
+  CHORE_COMPLETED
+  PROPOSAL_SUBMITTED
+  PIN_RESET
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
 
-/// A chore definition. Recurring chores stay pickable; one-time chores
-/// disappear after being claimed.
-model Chore {
+/// Single household record per deployment (TD-05).
+model Family {
+  id          String   @id @default("singleton")
+  parentPhone String? // E.164; set during bootstrap (M2)
+  pinHash     String? // bcrypt hash; null = bootstrap mode (TD-04)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  children Child[]
+}
+
+model Child {
   id        String   @id @default(cuid())
   name      String
-  emoji     String // single emoji character
-  reward    Decimal  @db.Decimal(10, 2) // USD, e.g. 2.50
-  recurring Boolean // true = always available
-  createdBy Creator
-  isActive  Boolean  @default(true) // soft delete
+  familyId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tasks Task[]
+  family    Family     @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  chores    Chore[]
+  proposals Proposal[]
+
+  @@index([familyId])
 }
 
-/// An instance of a chore being claimed and worked. One Task per chore claim.
-/// A recurring chore can generate many Tasks over time. name/emoji/reward are
-/// snapshotted from the Chore at claim time so later edits don't affect history.
-model Task {
-  id          String     @id @default(cuid())
-  choreId     String? // null if the source chore was deleted
-  name        String // snapshot of chore name at claim time
-  emoji       String // snapshot of emoji at claim time
-  reward      Decimal    @db.Decimal(10, 2) // snapshot of reward at claim time
-  status      TaskStatus
-  claimedAt   DateTime   @default(now())
-  completedAt DateTime? // when kid marked done
-  approvedAt  DateTime? // when parent approved
-  rejectedAt  DateTime? // when parent rejected
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+model Chore {
+  id               String       @id @default(cuid())
+  name             String
+  description      String?
+  reward           Decimal      @db.Decimal(10, 2)
+  status           ChoreStatus
+  childId          String? // null = Available (unassigned)
+  rejectionComment String?
+  createdBy        ChoreCreator
+  paid             Boolean      @default(false) // TD-13; meaningful when APPROVED
+  sourceProposalId String?      @unique
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
-  chore            Chore?            @relation(fields: [choreId], references: [id], onDelete: SetNull)
+  child            Child?            @relation(fields: [childId], references: [id], onDelete: SetNull)
+  sourceProposal   Proposal?         @relation(fields: [sourceProposalId], references: [id], onDelete: SetNull)
   notificationLogs NotificationLog[]
 
   @@index([status])
-  @@index([choreId])
+  @@index([childId])
 }
 
-/// A chore suggested by the kid before parent approval. On approval a Chore is
-/// created and a Task is opened. On rejection the Proposal is soft-deleted.
 model Proposal {
-  id              String         @id @default(cuid())
-  name            String
-  emoji           String
-  suggestedReward Decimal        @db.Decimal(10, 2) // kid-proposed amount
-  approvedReward  Decimal?       @db.Decimal(10, 2) // parent can adjust on approval
-  status          ProposalStatus
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id             String         @id @default(cuid())
+  name           String
+  askingReward   Decimal        @db.Decimal(10, 2)
+  counterReward  Decimal?       @db.Decimal(10, 2)
+  status         ProposalStatus @default(PENDING)
+  childId        String
+  acknowledgedAt DateTime? // TD-12: child ack after rejection
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  child        Child  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  createdChore Chore?
 
   @@index([status])
+  @@index([childId])
 }
 
-/// Audit trail for every SMS sent. A task status change is never blocked if SMS
-/// fails.
+/// SMS audit trail. State transitions are never blocked if SMS fails.
 model NotificationLog {
   id        String             @id @default(cuid())
-  taskId    String
-  phone     String // destination number
-  message   String // SMS body sent
+  choreId   String? // null for PIN_RESET events
+  event     NotificationEvent
+  phone     String
+  message   String
   status    NotificationStatus
-  twilioSid String? // Twilio message SID
-  error     String? // error message if FAILED
+  twilioSid String?
+  error     String?
   createdAt DateTime           @default(now())
 
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  chore Chore? @relation(fields: [choreId], references: [id], onDelete: SetNull)
 
-  @@index([taskId])
-}
-
-/// Single-row table (id = "singleton"). Stores parent phone and app-level prefs.
-model Settings {
-  id          String   @id @default("singleton")
-  parentPhone String? // E.164 format e.g. +14155551234
-  updatedAt   DateTime @updatedAt
+  @@index([choreId])
+  @@index([createdAt])
 }

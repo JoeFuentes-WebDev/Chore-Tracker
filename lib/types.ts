@@ -4,21 +4,22 @@
 // Re-exported here so components and routes import from one place.
 
 export type {
+  Family,
+  Child,
   Chore,
-  Task,
   Proposal,
   NotificationLog,
-  Settings,
 } from "@prisma/client";
 
 export {
-  Creator,
-  TaskStatus,
+  ChoreStatus,
+  ChoreCreator,
   ProposalStatus,
   NotificationStatus,
+  NotificationEvent,
 } from "@prisma/client";
 
-import type { TaskStatus, ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@prisma/client";
 
 // ---------------------------------------------------------------------------
 // Client-side mode toggle (localStorage, not persisted in DB) — see 6.1 / 7.5
@@ -32,45 +33,34 @@ export type AppMode = "kid" | "parent";
 
 export interface CreateChoreBody {
   name: string;
-  emoji: string;
+  description?: string;
   reward: number;
-  recurring: boolean;
 }
 
 export type UpdateChoreBody = Partial<{
   name: string;
-  emoji: string;
+  description: string;
   reward: number;
-  recurring: boolean;
-  isActive: boolean;
 }>;
-
-export interface CreateTaskBody {
-  choreId: string;
-}
-
-export interface UpdateTaskBody {
-  status: Extract<TaskStatus, "PENDING" | "APPROVED" | "REJECTED">;
-  reward?: number; // optional override, used on proposal approvals
-}
 
 export interface CreateProposalBody {
   name: string;
-  emoji: string;
-  suggestedReward: number;
+  askingReward: number;
 }
 
 export interface UpdateProposalBody {
-  status: Extract<ProposalStatus, "APPROVED" | "REJECTED">;
-  approvedReward?: number;
+  status: Extract<ProposalStatus, "ACCEPTED" | "COUNTERED" | "REJECTED">;
+  counterReward?: number;
 }
 
-export interface UpdateSettingsBody {
+export interface UpdateFamilyBody {
   parentPhone?: string;
+  pin?: string;
 }
 
 export interface NotifyBody {
-  taskId: string;
+  choreId?: string;
+  event: string;
   phone: string;
   message: string;
 }

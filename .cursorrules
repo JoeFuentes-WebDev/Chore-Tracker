@@ -1,0 +1,87 @@
+# ChoreTracker — Cursor Rules
+# Global rules. Applied to every prompt in this project without exception.
+
+---
+
+## Project Context
+
+ChoreTracker is a mobile-first PWA for families. Two distinct user surfaces: Parent and Child.
+Never mix concerns between the parent and child surfaces.
+
+Always read these files before making any structural decision:
+- Architecture.md
+- TechnicalDecisions.md
+- DesignPrinciples.md
+- BuildPlan.md
+
+---
+
+## Stack (Locked)
+
+- Framework: Next.js App Router + TypeScript
+- Styling: Tailwind CSS + shadcn/ui
+- Database: Neon (Postgres) via Prisma
+- SMS: Twilio
+- Deployment: Vercel
+
+Do not introduce new dependencies without explicitly flagging it and waiting for approval.
+
+---
+
+## TypeScript
+
+- Never use `any`. Use `unknown` and narrow, or define the type.
+- Use generics when a function needs to be reusable and type-safe.
+- Prefer discriminated unions for state machines (chore status, proposal status).
+
+---
+
+## Component Architecture
+
+- No inline functions in JSX. Extract named handlers above the return statement.
+- No inline layout (grid, flex) in page files. Use named layout components.
+- If a div has more than 4 Tailwind classes and appears more than once, extract it into a named component.
+- All conditional class merging via `cn()` from shadcn. Never template-string classes together.
+- Use `cva()` for component variants. Never branch on className strings inline.
+- Components live in external files. Never define a component inside another component file.
+- Files should be under 120 lines wherever possible. If a file is growing beyond that, extract.
+
+---
+
+## File Structure
+
+- `src/components/ui/` — shadcn primitives. Do not edit directly.
+- `src/components/layout/` — page-level layout wrappers.
+- `src/components/parent/` — all parent surface components.
+- `src/components/child/` — all child surface components.
+- `src/components/shared/` — components used by both surfaces.
+- `src/lib/` — utilities, prisma client, twilio client, cn helper.
+- `src/app/` — Next.js App Router pages and API routes only. No business logic here.
+
+---
+
+## React Conventions
+
+- Default to Server Components. Add `'use client'` only when required (interactivity, hooks, browser APIs).
+- No data fetching inside `useEffect`. Use Server Components or React Query.
+- Twilio API calls are server-side only. Never expose Twilio credentials to the client.
+- Set `export const maxDuration = 60` on all API routes that call Twilio.
+
+---
+
+## Behavior Rules
+
+- Plan before code. State which files will be touched and what will change. Wait for approval.
+- Do not refactor unrelated code in the same session.
+- Do not modify the Prisma schema without flagging it explicitly.
+- Surface architectural tradeoffs before implementing — do not bury them in code.
+- Errors never reach the user as raw exceptions. Surface as non-blocking UI feedback.
+
+---
+
+## Design Rules
+
+- Mobile-first. Every layout, tap target, and interaction is designed for a phone screen first.
+- Minimal friction. Core actions reachable in as few taps as possible.
+- No confirmation dialogs except for destructive or financial actions (Pay modal, delete).
+
