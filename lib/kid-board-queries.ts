@@ -26,7 +26,13 @@ export async function getKidBoardData(): Promise<KidBoardData> {
     }),
     prisma.chore.findMany({
       where: {
-        status: { in: [ChoreStatus.CLAIMED, ChoreStatus.IN_PROGRESS] },
+        status: {
+          in: [
+            ChoreStatus.CLAIMED,
+            ChoreStatus.IN_PROGRESS,
+            ChoreStatus.PENDING_APPROVAL,
+          ],
+        },
       },
       orderBy: { updatedAt: "desc" },
     }),

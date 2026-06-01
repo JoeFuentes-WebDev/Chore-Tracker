@@ -12,6 +12,10 @@ function isStartable(chore: KidBoardChore): boolean {
   return chore.status === ChoreStatus.CLAIMED;
 }
 
+function isFinishable(chore: KidBoardChore): boolean {
+  return chore.status === ChoreStatus.IN_PROGRESS;
+}
+
 export function ActiveTaskList({ chores }: ActiveTaskListProps) {
   return (
     <section aria-label="My chores">
@@ -26,6 +30,7 @@ export function ActiveTaskList({ chores }: ActiveTaskListProps) {
               chore={chore}
               showStatus
               startable={isStartable(chore)}
+              finishable={isFinishable(chore)}
             />
           ))}
         </ul>

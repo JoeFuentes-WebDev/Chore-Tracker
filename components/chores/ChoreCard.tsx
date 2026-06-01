@@ -1,6 +1,7 @@
 "use client";
 
 import { ClaimChoreButton } from "@/components/chores/ClaimChoreButton";
+import { FinishChoreButton } from "@/components/chores/FinishChoreButton";
 import { StartChoreButton } from "@/components/chores/StartChoreButton";
 import { ChoreStatus } from "@/lib/types";
 import type { KidBoardChore } from "@/lib/kid-board-types";
@@ -14,6 +15,8 @@ export interface ChoreCardProps {
   claimable?: boolean;
   /** When true, shows a Start action for CLAIMED chores on the active list. */
   startable?: boolean;
+  /** When true, shows a Finish action for IN_PROGRESS chores on the active list. */
+  finishable?: boolean;
 }
 
 const STATUS_LABELS: Record<ChoreStatus, string> = {
@@ -29,6 +32,7 @@ export function ChoreCard({
   showStatus = false,
   claimable = false,
   startable = false,
+  finishable = false,
 }: ChoreCardProps) {
   return (
     <li className="rounded-xl border border-border bg-card p-4">
@@ -55,6 +59,7 @@ export function ChoreCard({
       ) : null}
       {claimable ? <ClaimChoreButton choreId={chore.id} /> : null}
       {startable ? <StartChoreButton choreId={chore.id} /> : null}
+      {finishable ? <FinishChoreButton choreId={chore.id} /> : null}
     </li>
   );
 }
