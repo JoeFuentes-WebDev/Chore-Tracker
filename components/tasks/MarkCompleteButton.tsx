@@ -1,11 +1,11 @@
 "use client";
 
-import type { Task } from "@/lib/types";
+import type { Chore } from "@/lib/types";
 
 export interface MarkCompleteButtonProps {
-  task: Task;
+  task: Chore;
   /** Called after the task transitions to PENDING. */
-  onCompleted?: (task: Task) => void;
+  onCompleted?: (task: Chore) => void;
 }
 
 // shadcn: Button. Visible only for CLAIMED tasks.

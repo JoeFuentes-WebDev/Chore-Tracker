@@ -1,11 +1,19 @@
-// Kid Board — /board (see 6.2)
-// Primary screen for the child. Composes:
-//   - EarningsSummary   (total approved earnings)
-//   - ChoreList         (recurring chores without an active task)
-//   - ActiveTaskList    (tasks with status = CLAIMED)
+import { ActiveTaskList } from "@/components/tasks/ActiveTaskList";
+import { EarningsSummary } from "@/components/tasks/EarningsSummary";
+import { ChoreList } from "@/components/chores/ChoreList";
+import { KidBoardLayout } from "@/components/layout/KidBoardLayout";
+import { getKidBoardData } from "@/lib/kid-board-queries";
 
-export default function BoardPage() {
-  // TODO: render EarningsSummary, ChoreList, and ActiveTaskList.
-  // Add padding-bottom for the fixed BottomNav.
-  return <main className="pb-20" />;
+export const dynamic = "force-dynamic";
+
+export default async function BoardPage() {
+  const { earningsTotal, availableChores, activeChores } = await getKidBoardData();
+
+  return (
+    <KidBoardLayout>
+      <EarningsSummary total={earningsTotal} />
+      <ChoreList chores={availableChores} />
+      <ActiveTaskList chores={activeChores} />
+    </KidBoardLayout>
+  );
 }

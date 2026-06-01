@@ -1,9 +1,9 @@
 "use client";
 
-import type { Task } from "@/lib/types";
+import type { Chore } from "@/lib/types";
 
 export interface TaskCardProps {
-  task: Task;
+  task: Chore;
   /**
    * When true, shows the Mark Complete action (only valid for CLAIMED tasks).
    * When false (e.g. history view), renders read-only with no action buttons.

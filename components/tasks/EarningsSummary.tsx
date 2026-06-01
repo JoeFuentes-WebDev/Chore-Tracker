@@ -1,15 +1,20 @@
 "use client";
 
+import { formatReward } from "@/lib/utils";
+
 export interface EarningsSummaryProps {
-  /**
-   * Optional pre-computed total. When omitted, the component derives the total
-   * from GET /api/tasks?status=APPROVED (sum of Task.reward).
-   */
-  total?: number;
+  /** Unpaid approved earnings total (TD-13). Passed from the server. */
+  total: number;
 }
 
-// shadcn: Card. Displays total approved earnings.
-export function EarningsSummary(_props: EarningsSummaryProps) {
-  // TODO: fetch/sum approved task rewards, handle loading/error, show total.
-  return null;
+export function EarningsSummary({ total }: EarningsSummaryProps) {
+  return (
+    <section
+      aria-label="Earnings"
+      className="rounded-xl border border-border bg-card p-4"
+    >
+      <p className="text-sm text-muted-foreground">You&apos;ve earned</p>
+      <p className="text-3xl font-semibold tabular-nums">{formatReward(total)}</p>
+    </section>
+  );
 }

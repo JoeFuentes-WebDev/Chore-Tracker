@@ -1,13 +1,13 @@
 "use client";
 
-import type { Task } from "@/lib/types";
+import type { Chore } from "@/lib/types";
 
 export interface ApproveTaskCardProps {
-  task: Task;
+  task: Chore;
   /** Called after the task is approved (PATCH { status: "APPROVED" }). */
-  onApprove?: (task: Task) => void;
+  onApprove?: (task: Chore) => void;
   /** Called after the task is rejected (PATCH { status: "REJECTED" }). */
-  onReject?: (task: Task) => void;
+  onReject?: (task: Chore) => void;
 }
 
 // shadcn: Card, Button, Dialog (reject confirmation). Shows chore name, emoji,

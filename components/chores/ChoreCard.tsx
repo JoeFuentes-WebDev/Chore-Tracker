@@ -1,21 +1,47 @@
 "use client";
 
-import type { Chore } from "@/lib/types";
+import { ChoreStatus } from "@/lib/types";
+import type { KidBoardChore } from "@/lib/kid-board-types";
+import { cn, formatReward } from "@/lib/utils";
 
 export interface ChoreCardProps {
-  chore: Chore;
-  /** "kid" shows a Claim action; "parent" shows Edit/Delete. Default "kid". */
-  variant?: "kid" | "parent";
-  /** Kid variant: claim the chore (POST /api/tasks). Optimistic on press. */
-  onClaim?: (chore: Chore) => void;
-  /** Parent variant: open EditChoreSheet. */
-  onEdit?: (chore: Chore) => void;
-  /** Parent variant: soft delete (PATCH /api/chores/[id] { isActive: false }). */
-  onDelete?: (chore: Chore) => void;
+  chore: KidBoardChore;
+  /** When true, shows the chore status badge (used on the active chores list). */
+  showStatus?: boolean;
 }
 
-// shadcn: Card, Badge, Button. Shows emoji, name, reward pill.
-export function ChoreCard(_props: ChoreCardProps) {
-  // TODO: render emoji, name, reward badge and variant-specific actions.
-  return null;
+const STATUS_LABELS: Record<ChoreStatus, string> = {
+  AVAILABLE: "Available",
+  CLAIMED: "Claimed",
+  IN_PROGRESS: "In progress",
+  PENDING_APPROVAL: "Pending approval",
+  APPROVED: "Approved",
+};
+
+export function ChoreCard({ chore, showStatus = false }: ChoreCardProps) {
+  return (
+    <li className="rounded-xl border border-border bg-card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium">{chore.name}</p>
+          {chore.description ? (
+            <p className="mt-1 text-sm text-muted-foreground">{chore.description}</p>
+          ) : null}
+        </div>
+        <span className="shrink-0 rounded-full bg-secondary px-3 py-1 text-sm font-medium tabular-nums">
+          {formatReward(chore.reward)}
+        </span>
+      </div>
+      {showStatus ? (
+        <span
+          className={cn(
+            "mt-3 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium",
+            "bg-muted text-muted-foreground",
+          )}
+        >
+          {STATUS_LABELS[chore.status]}
+        </span>
+      ) : null}
+    </li>
+  );
 }

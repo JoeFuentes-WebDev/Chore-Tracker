@@ -1,12 +1,12 @@
 "use client";
 
-import type { Task, TaskStatus } from "@/lib/types";
+import type { Chore, ChoreStatus } from "@/lib/types";
 
 export interface TaskListProps {
   /** Optional pre-fetched tasks; otherwise fetches GET /api/tasks itself. */
-  tasks?: Task[];
+  tasks?: Chore[];
   /** Optional status filter, mapped to GET /api/tasks?status=... */
-  status?: TaskStatus;
+  status?: ChoreStatus;
   /** Whether rendered TaskCards expose actions. Default true. */
   actionable?: boolean;
 }
