@@ -2,9 +2,14 @@
 
 import { ChoreCard } from "@/components/chores/ChoreCard";
 import type { KidBoardChore } from "@/lib/kid-board-types";
+import { ChoreStatus } from "@/lib/types";
 
 export interface ActiveTaskListProps {
   chores: KidBoardChore[];
+}
+
+function isStartable(chore: KidBoardChore): boolean {
+  return chore.status === ChoreStatus.CLAIMED;
 }
 
 export function ActiveTaskList({ chores }: ActiveTaskListProps) {
@@ -16,7 +21,12 @@ export function ActiveTaskList({ chores }: ActiveTaskListProps) {
       ) : (
         <ul className="flex flex-col gap-3">
           {chores.map((chore) => (
-            <ChoreCard key={chore.id} chore={chore} showStatus />
+            <ChoreCard
+              key={chore.id}
+              chore={chore}
+              showStatus
+              startable={isStartable(chore)}
+            />
           ))}
         </ul>
       )}
