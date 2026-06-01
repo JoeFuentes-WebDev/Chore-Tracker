@@ -16,7 +16,7 @@ export function ChoreList({ chores }: ChoreListProps) {
       ) : (
         <ul className="flex flex-col gap-3">
           {chores.map((chore) => (
-            <ChoreCard key={chore.id} chore={chore} />
+            <ChoreCard key={chore.id} chore={chore} claimable />
           ))}
         </ul>
       )}

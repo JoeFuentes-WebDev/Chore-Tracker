@@ -1,5 +1,6 @@
 "use client";
 
+import { ClaimChoreButton } from "@/components/chores/ClaimChoreButton";
 import { ChoreStatus } from "@/lib/types";
 import type { KidBoardChore } from "@/lib/kid-board-types";
 import { cn, formatReward } from "@/lib/utils";
@@ -8,6 +9,8 @@ export interface ChoreCardProps {
   chore: KidBoardChore;
   /** When true, shows the chore status badge (used on the active chores list). */
   showStatus?: boolean;
+  /** When true, shows a Claim action (available chores on the kid board). */
+  claimable?: boolean;
 }
 
 const STATUS_LABELS: Record<ChoreStatus, string> = {
@@ -18,7 +21,7 @@ const STATUS_LABELS: Record<ChoreStatus, string> = {
   APPROVED: "Approved",
 };
 
-export function ChoreCard({ chore, showStatus = false }: ChoreCardProps) {
+export function ChoreCard({ chore, showStatus = false, claimable = false }: ChoreCardProps) {
   return (
     <li className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
@@ -42,6 +45,7 @@ export function ChoreCard({ chore, showStatus = false }: ChoreCardProps) {
           {STATUS_LABELS[chore.status]}
         </span>
       ) : null}
+      {claimable ? <ClaimChoreButton choreId={chore.id} /> : null}
     </li>
   );
 }
