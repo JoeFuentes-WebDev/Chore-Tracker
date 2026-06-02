@@ -21,7 +21,14 @@ export interface ParentReviewProposal {
   createdAt: string;
 }
 
+/** Derived approved balance awaiting settlement (TD-13). */
+export interface ParentApprovedBalance {
+  total: number;
+  choreCount: number;
+}
+
 export interface ParentDashboardData {
   pendingChores: ParentPendingChore[];
   proposals: ParentReviewProposal[];
+  approvedBalance: ParentApprovedBalance;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { acceptProposal } from "@/app/(parent)/dashboard/actions";
@@ -10,6 +11,7 @@ export interface AcceptProposalButtonProps {
 }
 
 export function AcceptProposalButton({ proposalId }: AcceptProposalButtonProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +21,10 @@ export function AcceptProposalButton({ proposalId }: AcceptProposalButtonProps) 
       const result = await acceptProposal(proposalId);
       if (!result.ok) {
         setError(result.error);
+        return;
       }
+
+      router.refresh();
     });
   }
 

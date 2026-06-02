@@ -1,5 +1,6 @@
 import { ChoreStatus } from "@prisma/client";
 
+import { getParentApprovedBalance } from "@/lib/parent-balance-queries";
 import { prisma } from "@/lib/prisma";
 import type {
   ParentDashboardData,
@@ -7,9 +8,9 @@ import type {
   ParentReviewProposal,
 } from "@/lib/parent-dashboard-types";
 
-/** Parent dashboard read model — pending approvals and all proposals. */
+/** Parent dashboard read model — pending approvals, proposals, and approved balance. */
 export async function getParentDashboardData(): Promise<ParentDashboardData> {
-  const [chores, proposals] = await Promise.all([
+  const [chores, proposals, approvedBalance] = await Promise.all([
     prisma.chore.findMany({
       where: { status: ChoreStatus.PENDING_APPROVAL },
       include: { child: { select: { name: true } } },
@@ -19,6 +20,7 @@ export async function getParentDashboardData(): Promise<ParentDashboardData> {
       include: { child: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
     }),
+    getParentApprovedBalance(),
   ]);
 
   const pendingChores: ParentPendingChore[] = chores.map((chore) => ({
@@ -40,5 +42,5 @@ export async function getParentDashboardData(): Promise<ParentDashboardData> {
     createdAt: proposal.createdAt.toISOString(),
   }));
 
-  return { pendingChores, proposals: reviewProposals };
+  return { pendingChores, proposals: reviewProposals, approvedBalance };
 }

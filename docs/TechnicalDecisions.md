@@ -328,3 +328,31 @@ Each entry follows this format:
 
 **Revisit when:** Proposal descriptions ship; counter-offer flow (M BuildPlan) adds `COUNTERED` path.
 
+---
+
+## TD-27 — Accept Proposal Uses Nested Create + Orphan Recovery
+
+**Decision:** Accepting a proposal uses a single transaction with Prisma nested `createdChore.create` on the proposal update. If a proposal is already `ACCEPTED` but has no linked chore (orphaned state), accept creates the missing `AVAILABLE` chore idempotently. If a linked chore already exists, accept returns success without duplicating.
+
+**Alternatives:** Separate `updateMany` + `chore.create` calls; fail permanently on orphaned `ACCEPTED` rows.
+
+**Rationale:** Orphaned `ACCEPTED` proposals (status updated without chore) could not be re-accepted because guards only matched `PENDING`. Nested create ties status transition and chore creation atomically through the one-to-one relation.
+
+**Tradeoffs:** Accept on an already-accepted proposal with an existing chore is a no-op success — intentional idempotency.
+
+**Revisit when:** Proposal acceptance adds counter-reward or edits requiring a different chore shape.
+
+---
+
+## TD-26 — Balance Settlement via `paid` Flag (M12)
+
+**Decision:** Settlement marks all `APPROVED` + `paid: false` chores as `paid: true` in a single Prisma transaction. Chore `status` remains `APPROVED`; "PAID" is represented by the boolean, not a new enum value (TD-13). Parent Pay Balance requires a confirmation modal per TD-13 pay flow. Both `/dashboard` and `/board` revalidate after settlement.
+
+**Alternatives:** Add `PAID` to `ChoreStatus` enum; pay without confirmation; per-chore pay buttons.
+
+**Rationale:** Matches TD-13 derived balance model and milestone bulk-settlement requirement. Confirmation aligns with `.cursorrules` financial-action rule and TD-13 pay flow.
+
+**Tradeoffs:** Paid chores remain `APPROVED` in the database — queries must always filter on `paid` when computing outstanding balance.
+
+**Revisit when:** Payment history or per-chore settlement ships (explicitly out of scope for M12).
+

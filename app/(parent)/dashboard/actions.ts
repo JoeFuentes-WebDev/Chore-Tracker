@@ -7,6 +7,7 @@ import { approveChoreById } from "@/lib/approve-chore";
 import { createChore as createChoreRecord, type CreateChoreInput } from "@/lib/create-chore";
 import { denyProposalById } from "@/lib/deny-proposal";
 import { rejectChoreById } from "@/lib/reject-chore";
+import { settleApprovedBalance } from "@/lib/settle-balance";
 
 export async function approveChore(choreId: string): Promise<
   | { ok: true }
@@ -97,6 +98,25 @@ export async function denyProposal(proposalId: string): Promise<
     revalidatePath("/dashboard");
     revalidatePath("/board");
     return { ok: true };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function payBalance(): Promise<
+  | { ok: true; settledCount: number }
+  | { ok: false; error: string }
+> {
+  try {
+    const result = await settleApprovedBalance();
+
+    if (!result.ok) {
+      return result;
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/board");
+    return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
   }

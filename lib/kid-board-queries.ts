@@ -13,11 +13,15 @@ function serializeChore(chore: Chore): KidBoardChore {
   };
 }
 
-/** Kid board read model — unpaid approved earnings, available, and active chores. */
+/** Kid board read model — unpaid approved earnings, paid total, available, and active chores. */
 export async function getKidBoardData(): Promise<KidBoardData> {
-  const [earnings, availableChores, activeChores] = await Promise.all([
+  const [earnings, paidEarnings, availableChores, activeChores] = await Promise.all([
     prisma.chore.aggregate({
       where: { status: ChoreStatus.APPROVED, paid: false },
+      _sum: { reward: true },
+    }),
+    prisma.chore.aggregate({
+      where: { status: ChoreStatus.APPROVED, paid: true },
       _sum: { reward: true },
     }),
     prisma.chore.findMany({
@@ -40,6 +44,7 @@ export async function getKidBoardData(): Promise<KidBoardData> {
 
   return {
     earningsTotal: Number(earnings._sum.reward ?? 0),
+    paidTotal: Number(paidEarnings._sum.reward ?? 0),
     availableChores: availableChores.map(serializeChore),
     activeChores: activeChores.map(serializeChore),
   };

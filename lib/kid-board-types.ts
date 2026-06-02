@@ -11,6 +11,7 @@ export interface KidBoardChore {
 
 export interface KidBoardData {
   earningsTotal: number;
+  paidTotal: number;
   availableChores: KidBoardChore[];
   activeChores: KidBoardChore[];
 }
