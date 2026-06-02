@@ -1,9 +1,15 @@
-// Parent Dashboard — /dashboard (see 6.4)
-// Parent-only view of pending approvals.
-//   - PendingApprovalList  (tasks with status = PENDING)
-//   - ProposalReviewList   (proposals with status = PENDING)
+import { ParentDashboardLayout } from "@/components/layout/ParentDashboardLayout";
+import { PendingApprovalList } from "@/components/parent/PendingApprovalList";
+import { getParentDashboardData } from "@/lib/parent-dashboard-queries";
 
-export default function DashboardPage() {
-  // TODO: render PendingApprovalList and ProposalReviewList.
-  return <main className="pb-20" />;
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const { pendingChores } = await getParentDashboardData();
+
+  return (
+    <ParentDashboardLayout>
+      <PendingApprovalList chores={pendingChores} />
+    </ParentDashboardLayout>
+  );
 }
