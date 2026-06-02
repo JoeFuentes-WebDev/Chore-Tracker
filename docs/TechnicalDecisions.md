@@ -272,3 +272,31 @@ Each entry follows this format:
 
 **Revisit when:** Parent chore management (edit/delete board) ships on `/manage`.
 
+---
+
+## TD-22 — Proposal Description Deferred (M10)
+
+**Decision:** M10 proposal creation collects name and requested reward only. The `Proposal` model has no `description` column; no schema migration in this milestone.
+
+**Alternatives:** Add `description String?` to `Proposal`; store description in `name` field.
+
+**Rationale:** Architecture and existing schema define proposals as name + asking reward. Avoids migration scope in a read/create-only milestone.
+
+**Tradeoffs:** Child cannot add context to a proposal until a future schema change.
+
+**Revisit when:** Product requires proposal descriptions — add nullable `description` to `Proposal`.
+
+---
+
+## TD-23 — Kid Proposals on `/board` (Not `/propose`)
+
+**Decision:** Proposal creation form and My Proposals list live on `/board` in dedicated sections below chore lists. The `/propose` route remains unimplemented.
+
+**Alternatives:** Implement on `/propose` only; duplicate on both routes.
+
+**Rationale:** M10 explicitly places the flow on the Child Dashboard and separates proposals from chore sections.
+
+**Tradeoffs:** `/propose` stub remains empty until a future routing/nav milestone.
+
+**Revisit when:** BottomNav wires kid navigation to `/propose` as a separate screen.
+
