@@ -258,3 +258,17 @@ Each entry follows this format:
 
 **Revisit when:** Rejection comment milestone ships (Architecture chore completion flow step 8).
 
+---
+
+## TD-21 — Parent Create Chore on Dashboard
+
+**Decision:** Parents create chores via a form on `/dashboard`. New rows are inserted with `status = AVAILABLE`, `createdBy = PARENT`, and `childId = null`. The `createChore` server action revalidates `/board` only.
+
+**Alternatives:** Create on `/manage`; use POST `/api/chores`.
+
+**Rationale:** Milestone places creation on the Parent Dashboard. Server action + Prisma matches existing kid/parent mutation pattern. Child available list is the only surface that changes on create.
+
+**Tradeoffs:** Parent dashboard does not list available chores — parent confirms via success message and child board.
+
+**Revisit when:** Parent chore management (edit/delete board) ships on `/manage`.
+

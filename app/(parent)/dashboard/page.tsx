@@ -1,4 +1,5 @@
 import { ParentDashboardLayout } from "@/components/layout/ParentDashboardLayout";
+import { CreateChoreForm } from "@/components/parent/CreateChoreForm";
 import { PendingApprovalList } from "@/components/parent/PendingApprovalList";
 import { getParentDashboardData } from "@/lib/parent-dashboard-queries";
 
@@ -9,6 +10,7 @@ export default async function DashboardPage() {
 
   return (
     <ParentDashboardLayout>
+      <CreateChoreForm />
       <PendingApprovalList chores={pendingChores} />
     </ParentDashboardLayout>
   );

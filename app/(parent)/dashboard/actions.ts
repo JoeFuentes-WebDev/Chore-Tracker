@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { approveChoreById } from "@/lib/approve-chore";
+import { createChore as createChoreRecord, type CreateChoreInput } from "@/lib/create-chore";
 import { rejectChoreById } from "@/lib/reject-chore";
 
 export async function approveChore(choreId: string): Promise<
@@ -38,6 +39,24 @@ export async function rejectChore(choreId: string): Promise<
     revalidatePath("/dashboard");
     revalidatePath("/board");
     return { ok: true };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function createChore(input: CreateChoreInput): Promise<
+  | { ok: true; choreId: string }
+  | { ok: false; error: string }
+> {
+  try {
+    const result = await createChoreRecord(input);
+
+    if (!result.ok) {
+      return result;
+    }
+
+    revalidatePath("/board");
+    return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
   }
