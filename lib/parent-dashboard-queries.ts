@@ -4,15 +4,22 @@ import { prisma } from "@/lib/prisma";
 import type {
   ParentDashboardData,
   ParentPendingChore,
+  ParentReviewProposal,
 } from "@/lib/parent-dashboard-types";
 
-/** Parent dashboard read model — chores awaiting approval. */
+/** Parent dashboard read model — pending approvals and all proposals. */
 export async function getParentDashboardData(): Promise<ParentDashboardData> {
-  const chores = await prisma.chore.findMany({
-    where: { status: ChoreStatus.PENDING_APPROVAL },
-    include: { child: { select: { name: true } } },
-    orderBy: { updatedAt: "desc" },
-  });
+  const [chores, proposals] = await Promise.all([
+    prisma.chore.findMany({
+      where: { status: ChoreStatus.PENDING_APPROVAL },
+      include: { child: { select: { name: true } } },
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.proposal.findMany({
+      include: { child: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
   const pendingChores: ParentPendingChore[] = chores.map((chore) => ({
     id: chore.id,
@@ -23,5 +30,15 @@ export async function getParentDashboardData(): Promise<ParentDashboardData> {
     submittedAt: chore.updatedAt.toISOString(),
   }));
 
-  return { pendingChores };
+  const reviewProposals: ParentReviewProposal[] = proposals.map((proposal) => ({
+    id: proposal.id,
+    name: proposal.name,
+    description: null,
+    askingReward: Number(proposal.askingReward),
+    childName: proposal.child.name,
+    status: proposal.status,
+    createdAt: proposal.createdAt.toISOString(),
+  }));
+
+  return { pendingChores, proposals: reviewProposals };
 }

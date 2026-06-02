@@ -300,3 +300,31 @@ Each entry follows this format:
 
 **Revisit when:** BottomNav wires kid navigation to `/propose` as a separate screen.
 
+---
+
+## TD-24 — Proposal Deny Maps to `REJECTED` Status
+
+**Decision:** Denying a proposal sets `ProposalStatus.REJECTED` in the database. UI labels this "Denied" on both parent and child surfaces. Milestone terminology uses DENIED; schema enum uses REJECTED (distinct from chore workflow REJECTED, which does not exist as a status).
+
+**Alternatives:** Add `DENIED` to `ProposalStatus` enum via migration; rename `REJECTED` to `DENIED`.
+
+**Rationale:** Schema already defines `REJECTED` for proposals (TD-12). Avoids migration in M11. Display layer bridges terminology gap.
+
+**Tradeoffs:** Developers must remember REJECTED (proposal) displays as "Denied" while chore rejections use IN_PROGRESS, not a REJECTED status.
+
+**Revisit when:** Schema enum is normalized across docs and code.
+
+---
+
+## TD-25 — Accept Proposal Creates Child-Authored AVAILABLE Chore
+
+**Decision:** Accepting a proposal runs a transaction: `PENDING → ACCEPTED`, then creates a `Chore` with proposal name, null description, asking reward, `status = AVAILABLE`, `createdBy = CHILD`, `sourceProposalId` set, `childId = null`. Accept/deny actions revalidate `/dashboard` and `/board`.
+
+**Alternatives:** `createdBy = PARENT`; create chore outside transaction.
+
+**Rationale:** Architecture states chores from proposals are child-authored. Transaction prevents orphaned ACCEPTED proposals or duplicate chores on race. Kid board must show new available chore and updated proposal status immediately.
+
+**Tradeoffs:** Proposal has no description column (TD-22) — accepted chore description is always null until schema adds proposal descriptions.
+
+**Revisit when:** Proposal descriptions ship; counter-offer flow (M BuildPlan) adds `COUNTERED` path.
+
