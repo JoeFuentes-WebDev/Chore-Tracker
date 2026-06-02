@@ -1,5 +1,6 @@
 "use client";
 
+import { ApproveChoreButton } from "@/components/parent/ApproveChoreButton";
 import type { ParentPendingChore } from "@/lib/parent-dashboard-types";
 import { cn, formatReward } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ export function PendingApprovalCard({ chore }: PendingApprovalCardProps) {
           Submitted {formatSubmittedAt(chore.submittedAt)}
         </span>
       </div>
+      <ApproveChoreButton choreId={chore.id} />
     </li>
   );
 }

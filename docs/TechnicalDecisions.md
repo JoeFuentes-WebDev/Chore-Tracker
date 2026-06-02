@@ -230,3 +230,17 @@ Each entry follows this format:
 
 **Revisit when:** V2 needs recurring chores, chore templates, or earnings/completion history beyond the current row.
 
+---
+
+## TD-19 — Cross-Surface Revalidation on Parent Approve
+
+**Decision:** The `approveChore` server action calls `revalidatePath("/dashboard")` and `revalidatePath("/board")` after a successful approval.
+
+**Alternatives:** Revalidate `/dashboard` only; use a shared cache tag.
+
+**Rationale:** Kid earnings are derived from `APPROVED` + `paid: false` on `/board`. Parent approve must invalidate the kid read model immediately so earnings reflect the approval without a manual refresh strategy on the child surface.
+
+**Tradeoffs:** Parent mutation knows about the child route path. Acceptable at V1 scale with two surfaces.
+
+**Revisit when:** Shared cache tags or a unified revalidation helper is introduced across surfaces.
+
