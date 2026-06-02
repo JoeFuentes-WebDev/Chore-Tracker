@@ -244,3 +244,17 @@ Each entry follows this format:
 
 **Revisit when:** Shared cache tags or a unified revalidation helper is introduced across surfaces.
 
+---
+
+## TD-20 — Reject Returns to IN_PROGRESS (No Comment)
+
+**Decision:** Rejecting a submitted chore transitions `PENDING_APPROVAL → IN_PROGRESS`. No rejection comment, reason field, or dedicated `REJECTED` status in this milestone.
+
+**Alternatives:** Store rejection comment (BuildPlan M5); introduce a `REJECTED` dead-end status.
+
+**Rationale:** Milestone scope keeps the workflow simple — child can fix and resubmit immediately via existing Finish action. Avoids schema/UI complexity until comment display is implemented.
+
+**Tradeoffs:** Child does not see why work was rejected. Parent cannot leave feedback yet.
+
+**Revisit when:** Rejection comment milestone ships (Architecture chore completion flow step 8).
+

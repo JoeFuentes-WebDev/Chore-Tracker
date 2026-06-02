@@ -1,6 +1,7 @@
 "use client";
 
 import { ApproveChoreButton } from "@/components/parent/ApproveChoreButton";
+import { RejectChoreButton } from "@/components/parent/RejectChoreButton";
 import type { ParentPendingChore } from "@/lib/parent-dashboard-types";
 import { cn, formatReward } from "@/lib/utils";
 
@@ -43,7 +44,10 @@ export function PendingApprovalCard({ chore }: PendingApprovalCardProps) {
           Submitted {formatSubmittedAt(chore.submittedAt)}
         </span>
       </div>
-      <ApproveChoreButton choreId={chore.id} />
+      <div className="mt-3 flex gap-3">
+        <ApproveChoreButton choreId={chore.id} />
+        <RejectChoreButton choreId={chore.id} />
+      </div>
     </li>
   );
 }
