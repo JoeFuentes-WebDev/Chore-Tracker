@@ -4,12 +4,12 @@ import { useState, useTransition, type ChangeEvent, type FormEvent } from "react
 
 import { createProposal } from "@/app/(kid)/board/actions";
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils";
-
-const inputClassName = cn(
-  "min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2",
-  "text-sm text-foreground",
-);
+import {
+  FormField,
+  FormMessage,
+  FormSection,
+  formInputClassName,
+} from "@/components/ui/FormField";
 
 export function CreateProposalForm() {
   const [isPending, startTransition] = useTransition();
@@ -50,27 +50,20 @@ export function CreateProposalForm() {
   }
 
   return (
-    <section aria-label="Propose a chore">
-      <h2 className="mb-3 text-lg font-semibold">Propose a chore</h2>
+    <FormSection title="Propose a chore" ariaLabel="Propose a chore">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="proposal-name" className="text-sm font-medium">
-            Name
-          </label>
+        <FormField id="proposal-name" label="Name">
           <input
             id="proposal-name"
             type="text"
             required
             value={name}
             onChange={handleNameChange}
-            className={inputClassName}
+            className={formInputClassName}
             disabled={isPending}
           />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="proposal-reward" className="text-sm font-medium">
-            Requested reward (USD)
-          </label>
+        </FormField>
+        <FormField id="proposal-reward" label="Requested reward (USD)">
           <input
             id="proposal-reward"
             type="number"
@@ -79,24 +72,20 @@ export function CreateProposalForm() {
             step="0.01"
             value={askingReward}
             onChange={handleRewardChange}
-            className={inputClassName}
+            className={formInputClassName}
             disabled={isPending}
           />
-        </div>
+        </FormField>
         <Button type="submit" variant="primary" disabled={isPending}>
           {isPending ? "Submitting…" : "Submit proposal"}
         </Button>
-        {error ? (
-          <p className="text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        ) : null}
+        {error ? <FormMessage variant="error">{error}</FormMessage> : null}
         {success ? (
-          <p className="text-sm text-muted-foreground" role="status">
+          <FormMessage variant="success">
             Proposal submitted. Your parent will review it.
-          </p>
+          </FormMessage>
         ) : null}
       </form>
-    </section>
+    </FormSection>
   );
 }

@@ -1,10 +1,17 @@
 "use client";
 
 import { claimChore, finishChore, startChore } from "@/app/(kid)/board/actions";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  RewardPill,
+} from "@/components/ui/Card";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
-import { ChoreStatus } from "@/lib/types";
+
 import type { KidBoardChore } from "@/lib/kid-board-types";
-import { cn, formatReward } from "@/lib/utils";
 
 export interface ChoreCardProps {
   chore: KidBoardChore;
@@ -18,14 +25,6 @@ export interface ChoreCardProps {
   finishable?: boolean;
 }
 
-const STATUS_LABELS: Record<ChoreStatus, string> = {
-  AVAILABLE: "Available",
-  CLAIMED: "Claimed",
-  IN_PROGRESS: "In progress",
-  PENDING_APPROVAL: "Pending approval",
-  APPROVED: "Approved",
-};
-
 export function ChoreCard({
   chore,
   showStatus = false,
@@ -34,27 +33,20 @@ export function ChoreCard({
   finishable = false,
 }: ChoreCardProps) {
   return (
-    <li className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
+    <Card>
+      <CardHeader>
+        <CardTitle>
           <p className="font-medium">{chore.name}</p>
           {chore.description ? (
             <p className="mt-1 text-sm text-muted-foreground">{chore.description}</p>
           ) : null}
-        </div>
-        <span className="shrink-0 rounded-full bg-secondary px-3 py-1 text-sm font-medium tabular-nums">
-          {formatReward(chore.reward)}
-        </span>
-      </div>
+        </CardTitle>
+        <RewardPill amount={chore.reward} />
+      </CardHeader>
       {showStatus ? (
-        <span
-          className={cn(
-            "mt-3 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium",
-            "bg-muted text-muted-foreground",
-          )}
-        >
-          {STATUS_LABELS[chore.status]}
-        </span>
+        <CardContent>
+          <StatusBadge type="chore" status={chore.status} />
+        </CardContent>
       ) : null}
       {claimable ? (
         <AsyncActionButton
@@ -83,6 +75,6 @@ export function ChoreCard({
           variant="primary"
         />
       ) : null}
-    </li>
+    </Card>
   );
 }

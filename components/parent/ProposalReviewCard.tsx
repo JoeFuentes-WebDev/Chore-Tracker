@@ -3,21 +3,22 @@
 import { useRouter } from "next/navigation";
 
 import { acceptProposal, denyProposal } from "@/app/(parent)/dashboard/actions";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  RewardPill,
+} from "@/components/ui/Card";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
 import { ProposalStatus } from "@/lib/types";
 import type { ParentReviewProposal } from "@/lib/parent-dashboard-types";
-import { cn, formatReward } from "@/lib/utils";
 
 export interface ProposalReviewCardProps {
   proposal: ParentReviewProposal;
 }
-
-const STATUS_LABELS: Record<ProposalStatus, string> = {
-  PENDING: "Pending",
-  ACCEPTED: "Accepted",
-  COUNTERED: "Countered",
-  REJECTED: "Denied",
-};
 
 function formatCreatedAt(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -35,34 +36,25 @@ export function ProposalReviewCard({ proposal }: ProposalReviewCardProps) {
   }
 
   return (
-    <li className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
+    <Card>
+      <CardHeader>
+        <CardTitle>
           <p className="font-medium">{proposal.name}</p>
           {proposal.description ? (
             <p className="mt-1 text-sm text-muted-foreground">{proposal.description}</p>
           ) : null}
           <p className="mt-2 text-sm text-muted-foreground">{proposal.childName}</p>
-        </div>
-        <span className="shrink-0 rounded-full bg-secondary px-3 py-1 text-sm font-medium tabular-nums">
-          {formatReward(proposal.askingReward)}
-        </span>
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span
-          className={cn(
-            "inline-block rounded-full px-2.5 py-0.5 text-xs font-medium",
-            "bg-muted text-muted-foreground",
-          )}
-        >
-          {STATUS_LABELS[proposal.status]}
-        </span>
+        </CardTitle>
+        <RewardPill amount={proposal.askingReward} />
+      </CardHeader>
+      <CardContent className="flex flex-wrap items-center gap-2">
+        <StatusBadge type="proposal" status={proposal.status} />
         <span className="text-xs text-muted-foreground">
           Submitted {formatCreatedAt(proposal.createdAt)}
         </span>
-      </div>
+      </CardContent>
       {isPending ? (
-        <div className="mt-3 flex gap-3">
+        <CardFooter>
           <AsyncActionButton
             className="flex-1"
             action={() => acceptProposal(proposal.id)}
@@ -78,8 +70,8 @@ export function ProposalReviewCard({ proposal }: ProposalReviewCardProps) {
             pendingLabel="Denying…"
             variant="secondary"
           />
-        </div>
+        </CardFooter>
       ) : null}
-    </li>
+    </Card>
   );
 }

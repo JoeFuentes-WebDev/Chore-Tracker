@@ -1,6 +1,7 @@
 "use client";
 
 import { PayBalanceButton } from "@/components/parent/PayBalanceButton";
+import { CardSection } from "@/components/ui/Card";
 import type { ParentApprovedBalance } from "@/lib/parent-dashboard-types";
 import { formatReward } from "@/lib/utils";
 
@@ -12,10 +13,7 @@ export function ApprovedBalanceCard({ balance }: ApprovedBalanceCardProps) {
   const hasBalance = balance.choreCount > 0 && balance.total > 0;
 
   return (
-    <section
-      aria-label="Approved balance"
-      className="rounded-xl border border-border bg-card p-4"
-    >
+    <CardSection aria-label="Approved balance">
       <p className="text-sm text-muted-foreground">Approved balance</p>
       <p className="text-3xl font-semibold tabular-nums">{formatReward(balance.total)}</p>
       <p className="mt-1 text-sm text-muted-foreground">
@@ -24,6 +22,6 @@ export function ApprovedBalanceCard({ balance }: ApprovedBalanceCardProps) {
       <div className="mt-4">
         <PayBalanceButton balanceTotal={balance.total} disabled={!hasBalance} />
       </div>
-    </section>
+    </CardSection>
   );
 }

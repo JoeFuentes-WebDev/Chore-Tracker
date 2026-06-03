@@ -1,5 +1,6 @@
 "use client";
 
+import { CardSection } from "@/components/ui/Card";
 import { formatReward } from "@/lib/utils";
 
 export interface BalanceSummaryProps {
@@ -11,10 +12,7 @@ export interface BalanceSummaryProps {
 
 export function BalanceSummary({ outstandingTotal, paidTotal }: BalanceSummaryProps) {
   return (
-    <section
-      aria-label="Balance"
-      className="rounded-xl border border-border bg-card p-4"
-    >
+    <CardSection aria-label="Balance">
       <p className="text-sm text-muted-foreground">Outstanding balance</p>
       <p className="text-3xl font-semibold tabular-nums">
         {formatReward(outstandingTotal)}
@@ -25,6 +23,6 @@ export function BalanceSummary({ outstandingTotal, paidTotal }: BalanceSummaryPr
           {formatReward(paidTotal)}
         </span>
       </p>
-    </section>
+    </CardSection>
   );
 }
