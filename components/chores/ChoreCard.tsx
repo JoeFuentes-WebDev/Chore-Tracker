@@ -1,8 +1,7 @@
 "use client";
 
-import { ClaimChoreButton } from "@/components/chores/ClaimChoreButton";
-import { FinishChoreButton } from "@/components/chores/FinishChoreButton";
-import { StartChoreButton } from "@/components/chores/StartChoreButton";
+import { claimChore, finishChore, startChore } from "@/app/(kid)/board/actions";
+import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
 import { ChoreStatus } from "@/lib/types";
 import type { KidBoardChore } from "@/lib/kid-board-types";
 import { cn, formatReward } from "@/lib/utils";
@@ -57,9 +56,33 @@ export function ChoreCard({
           {STATUS_LABELS[chore.status]}
         </span>
       ) : null}
-      {claimable ? <ClaimChoreButton choreId={chore.id} /> : null}
-      {startable ? <StartChoreButton choreId={chore.id} /> : null}
-      {finishable ? <FinishChoreButton choreId={chore.id} /> : null}
+      {claimable ? (
+        <AsyncActionButton
+          className="mt-3"
+          action={() => claimChore(chore.id)}
+          idleLabel="Claim"
+          pendingLabel="Claiming…"
+          variant="primary"
+        />
+      ) : null}
+      {startable ? (
+        <AsyncActionButton
+          className="mt-3"
+          action={() => startChore(chore.id)}
+          idleLabel="Start"
+          pendingLabel="Starting…"
+          variant="primary"
+        />
+      ) : null}
+      {finishable ? (
+        <AsyncActionButton
+          className="mt-3"
+          action={() => finishChore(chore.id)}
+          idleLabel="Finish"
+          pendingLabel="Submitting…"
+          variant="primary"
+        />
+      ) : null}
     </li>
   );
 }

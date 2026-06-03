@@ -3,6 +3,7 @@
 import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 
 import { createChore } from "@/app/(parent)/dashboard/actions";
+import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
 const inputClassName = cn(
@@ -101,16 +102,9 @@ export function CreateChoreForm() {
             disabled={isPending}
           />
         </div>
-        <button
-          type="submit"
-          disabled={isPending}
-          className={cn(
-            "min-h-11 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground",
-            "disabled:opacity-50",
-          )}
-        >
+        <Button type="submit" variant="primary" disabled={isPending}>
           {isPending ? "Creating…" : "Create chore"}
-        </button>
+        </Button>
         {error ? (
           <p className="text-sm text-destructive" role="alert">
             {error}

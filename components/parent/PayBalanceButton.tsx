@@ -3,7 +3,8 @@
 import { useState, useTransition, type MouseEvent } from "react";
 
 import { payBalance } from "@/app/(parent)/dashboard/actions";
-import { cn, formatReward } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
+import { formatReward } from "@/lib/utils";
 
 export interface PayBalanceButtonProps {
   balanceTotal: number;
@@ -45,17 +46,14 @@ export function PayBalanceButton({ balanceTotal, disabled }: PayBalanceButtonPro
 
   return (
     <>
-      <button
-        type="button"
+      <Button
+        variant="primary"
+        className="w-full"
         onClick={handleOpenConfirm}
         disabled={disabled || isPending}
-        className={cn(
-          "min-h-11 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground",
-          "disabled:opacity-50",
-        )}
       >
         Pay balance
-      </button>
+      </Button>
       {error && !showConfirm ? (
         <p className="text-sm text-destructive" role="alert">
           {error}
@@ -86,28 +84,22 @@ export function PayBalanceButton({ balanceTotal, disabled }: PayBalanceButtonPro
               </p>
             ) : null}
             <div className="mt-4 flex gap-3">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                className="flex-1"
                 onClick={handleCloseConfirm}
                 disabled={isPending}
-                className={cn(
-                  "min-h-11 flex-1 rounded-lg border border-border bg-background px-4 py-2",
-                  "text-sm font-medium text-foreground disabled:opacity-50",
-                )}
               >
                 No
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1"
                 onClick={handleConfirmPay}
                 disabled={isPending}
-                className={cn(
-                  "min-h-11 flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium",
-                  "text-primary-foreground disabled:opacity-50",
-                )}
               >
                 {isPending ? "Paying…" : "Yes, pay"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

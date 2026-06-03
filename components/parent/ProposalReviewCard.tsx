@@ -1,7 +1,9 @@
 "use client";
 
-import { AcceptProposalButton } from "@/components/parent/AcceptProposalButton";
-import { DenyProposalButton } from "@/components/parent/DenyProposalButton";
+import { useRouter } from "next/navigation";
+
+import { acceptProposal, denyProposal } from "@/app/(parent)/dashboard/actions";
+import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
 import { ProposalStatus } from "@/lib/types";
 import type { ParentReviewProposal } from "@/lib/parent-dashboard-types";
 import { cn, formatReward } from "@/lib/utils";
@@ -25,7 +27,12 @@ function formatCreatedAt(iso: string): string {
 }
 
 export function ProposalReviewCard({ proposal }: ProposalReviewCardProps) {
+  const router = useRouter();
   const isPending = proposal.status === ProposalStatus.PENDING;
+
+  function handleAcceptSuccess() {
+    router.refresh();
+  }
 
   return (
     <li className="rounded-xl border border-border bg-card p-4">
@@ -56,8 +63,21 @@ export function ProposalReviewCard({ proposal }: ProposalReviewCardProps) {
       </div>
       {isPending ? (
         <div className="mt-3 flex gap-3">
-          <AcceptProposalButton proposalId={proposal.id} />
-          <DenyProposalButton proposalId={proposal.id} />
+          <AsyncActionButton
+            className="flex-1"
+            action={() => acceptProposal(proposal.id)}
+            idleLabel="Accept"
+            pendingLabel="Accepting…"
+            variant="success"
+            onSuccess={handleAcceptSuccess}
+          />
+          <AsyncActionButton
+            className="flex-1"
+            action={() => denyProposal(proposal.id)}
+            idleLabel="Deny"
+            pendingLabel="Denying…"
+            variant="secondary"
+          />
         </div>
       ) : null}
     </li>
