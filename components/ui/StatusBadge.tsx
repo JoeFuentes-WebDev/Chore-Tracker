@@ -1,5 +1,4 @@
-import type { ChoreStatus, ProposalStatus } from "@prisma/client";
-
+import type { ChoreStatus, ProposalStatus } from "@/lib/constants/statuses";
 import { CHORE_STATUS_LABELS, PROPOSAL_STATUS_LABELS } from "@/lib/status-labels";
 import { cn } from "@/lib/utils";
 

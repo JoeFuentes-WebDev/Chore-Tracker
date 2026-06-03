@@ -1,4 +1,4 @@
-import type { ChoreStatus, ProposalStatus } from "@prisma/client";
+import type { ChoreStatus, ProposalStatus } from "@/lib/constants/statuses";
 
 export const CHORE_STATUS_LABELS: Record<ChoreStatus, string> = {
   AVAILABLE: "Available",

@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@/lib/constants/statuses";
 
 /** Serializable pending-approval chore for the parent dashboard. */
 export interface ParentPendingChore {

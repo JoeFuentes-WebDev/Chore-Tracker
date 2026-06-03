@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@/lib/constants/statuses";
 
 /** Serializable proposal shape passed from Server Components to the kid board. */
 export interface KidProposal {

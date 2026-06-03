@@ -11,15 +11,9 @@ export type {
   NotificationLog,
 } from "@prisma/client";
 
-export {
-  ChoreStatus,
-  ChoreCreator,
-  ProposalStatus,
-  NotificationStatus,
-  NotificationEvent,
-} from "@prisma/client";
+export * from "@/lib/constants/statuses";
 
-import type { ProposalStatus } from "@prisma/client";
+import type { ProposalStatus } from "@/lib/constants/statuses";
 
 // ---------------------------------------------------------------------------
 // Client-side mode toggle (localStorage, not persisted in DB) — see 6.1 / 7.5

@@ -2,7 +2,7 @@
 
 import { ChoreCard } from "@/components/chores/ChoreCard";
 import type { KidBoardChore } from "@/lib/kid-board-types";
-import { ChoreStatus } from "@/lib/types";
+import { ChoreStatus } from "@/lib/constants/statuses";
 
 export interface ActiveTaskListProps {
   chores: KidBoardChore[];

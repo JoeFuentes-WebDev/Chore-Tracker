@@ -1,4 +1,4 @@
-import type { ChoreStatus } from "@prisma/client";
+import type { ChoreStatus } from "@/lib/constants/statuses";
 
 /** Serializable chore shape passed from Server Components to the kid board. */
 export interface KidBoardChore {

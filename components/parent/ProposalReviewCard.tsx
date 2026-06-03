@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
-import { ProposalStatus } from "@/lib/types";
+import { ProposalStatus } from "@/lib/constants/statuses";
 import type { ParentReviewProposal } from "@/lib/parent-dashboard-types";
 
 export interface ProposalReviewCardProps {
