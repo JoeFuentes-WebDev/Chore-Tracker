@@ -1,9 +1,14 @@
-/** Canonical child board URL. Slug is presentation only. */
-export function getChildBoardPath(user: { slug: string }): string {
+/** Canonical child board URL. */
+export function getChildBoardPath(): string {
+  return "/child";
+}
+
+/** Legacy slug-based child URL — redirects to /child. */
+export function getLegacyChildSlugPath(user: { slug: string }): string {
   return `/child/${user.slug}`;
 }
 
-/** Legacy flat board route — redirects to canonical child URL when session exists. */
+/** Legacy flat board route — redirects to /child when session exists. */
 export function getLegacyChildBoardPath(): string {
   return "/board";
 }

@@ -7,7 +7,7 @@ import { getChildBoardPath } from "@/lib/auth/child-auth-paths";
 
 export const dynamic = "force-dynamic";
 
-/** Legacy route — redirects to canonical /child/[slug] when session exists. */
+/** Legacy route — redirects to /child when session exists. */
 export default async function LegacyBoardPage() {
   const context = await getCurrentChildContext();
 
@@ -19,5 +19,5 @@ export default async function LegacyBoardPage() {
     );
   }
 
-  redirect(getChildBoardPath(context.user));
+  redirect(getChildBoardPath());
 }

@@ -8,7 +8,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** Legacy route — redirects to canonical /parent/[slug]. */
+/** Legacy route — redirects to /parent. */
 export default async function LegacyDashboardPage() {
   const context = await getCurrentParentContext();
 
@@ -16,5 +16,5 @@ export default async function LegacyDashboardPage() {
     redirect(getParentSignInPath());
   }
 
-  redirect(getParentDashboardPath(context.parentUser));
+  redirect(getParentDashboardPath());
 }

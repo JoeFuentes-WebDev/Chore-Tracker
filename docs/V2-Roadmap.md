@@ -182,28 +182,31 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M6 — Human-Friendly Identity URLs
+### V2-M6.1 — Route Simplification
 
 **Status:** ✓ Complete
 
-**Goal:** User-scoped canonical URLs; legacy redirects preserve bookmarks.
+**Goal:** Flat `/parent` and `/child` URLs; session remains authoritative.
 
 **Delivered:**
 
-- `/parent/[slug]` — parent dashboard (session authoritative; slug canonicalization)
-- `/child/[slug]` — child board (session authoritative; slug canonicalization)
-- `/dashboard` → `/parent/{slug}` or `/sign-in`
-- `/board` → `/child/{slug}` or empty state when unauthenticated
-- `getParentDashboardPath`, `getChildBoardPath`, `revalidate-surfaces` helpers
-- Post-auth and invite accept redirect to canonical URLs
+- `/parent` — parent dashboard (no slug in URL)
+- `/child` — child board (no slug in URL)
+- Legacy: `/dashboard` → `/parent`, `/board` → `/child`
+- Compatibility: `/parent/[slug]` → `/parent`, `/child/[slug]` → `/child`
+- `User.slug` column and generation logic retained (not used in routing)
 
-**Reference:** TD-V2-12 in `TechnicalDecisions.md`
+**Reference:** TD-V2-13 in `TechnicalDecisions.md`
 
-**Done when:**
+---
 
-- Routes generated from user identity ✓
-- Wrong slug redirects to session user's slug ✓
-- M5 authorization unchanged ✓
+### V2-M6 — Human-Friendly Identity URLs
+
+**Status:** Superseded by M6.1 (flat routes)
+
+**Delivered (historical):**
+
+- Slug-based URLs introduced in M6; simplified to flat routes in M6.1
 
 ---
 
@@ -327,7 +330,8 @@ A new family can:
 | V2-M3 | Family creation | ✓ Complete |
 | V2-M4 | Child invitation + session cookie | ✓ Complete |
 | V2-M5 | Identity resolution & family scoping | ✓ Complete |
-| V2-M6 | Human-friendly identity URLs | ✓ Complete |
+| V2-M6 | Identity URLs (superseded by M6.1) | ✓ Complete |
+| V2-M6.1 | Flat `/parent` and `/child` routes | ✓ Complete |
 | V2-M7 | Push notifications | Pending |
 | V2-M8 | Family management | Pending |
 | V2-M9 | User settings | Pending |

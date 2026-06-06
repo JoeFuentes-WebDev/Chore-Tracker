@@ -36,7 +36,7 @@ export async function createFamily(input: CreateFamilyInput): Promise<
       return result;
     }
 
-    revalidateParentDashboard(parentUser.slug);
+    revalidateParentDashboard();
     return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -88,7 +88,7 @@ export async function approveChore(choreId: string): Promise<
       return result;
     }
 
-    revalidateParentDashboard(parent.user.slug);
+    revalidateParentDashboard();
     revalidateChildSurfaces();
     return { ok: true };
   } catch {
@@ -113,7 +113,7 @@ export async function rejectChore(choreId: string): Promise<
       return result;
     }
 
-    revalidateParentDashboard(parent.user.slug);
+    revalidateParentDashboard();
     revalidateChildSurfaces();
     return { ok: true };
   } catch {
@@ -169,7 +169,7 @@ export async function acceptProposal(proposalId: string): Promise<
       return result;
     }
 
-    revalidateParentDashboard(parent.user.slug);
+    revalidateParentDashboard();
     revalidateChildSurfaces();
     return result;
   } catch {
@@ -196,7 +196,7 @@ export async function denyProposal(proposalId: string): Promise<
       return result;
     }
 
-    revalidateParentDashboard(parent.user.slug);
+    revalidateParentDashboard();
     revalidateChildSurfaces();
     return { ok: true };
   } catch {
@@ -221,7 +221,7 @@ export async function payBalance(): Promise<
       return result;
     }
 
-    revalidateParentDashboard(parent.user.slug);
+    revalidateParentDashboard();
     revalidateChildSurfaces();
     return result;
   } catch {

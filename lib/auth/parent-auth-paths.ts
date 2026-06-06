@@ -13,14 +13,19 @@ export function getParentPostAuthHandlerPath(): string {
   return "/auth/parent/continue";
 }
 
-/** Canonical parent dashboard URL. Slug is presentation only. */
-export function getParentDashboardPath(user: { slug: string }): string {
+/** Canonical parent dashboard URL. */
+export function getParentDashboardPath(): string {
+  return "/parent";
+}
+
+/** Legacy slug-based parent URL — redirects to /parent. */
+export function getLegacyParentSlugPath(user: { slug: string }): string {
   return `/parent/${user.slug}`;
 }
 
 /** Destination after parent authentication. */
-export function getParentPostAuthPath(user: { slug: string }): string {
-  return getParentDashboardPath(user);
+export function getParentPostAuthPath(): string {
+  return getParentDashboardPath();
 }
 
 /** Where Clerk sends the user after sign-out. */
@@ -28,7 +33,7 @@ export function getParentSignOutRedirectPath(): string {
   return "/";
 }
 
-/** Legacy flat dashboard route — redirects to canonical parent URL. */
+/** Legacy flat dashboard route — redirects to /parent. */
 export function getLegacyParentDashboardPath(): string {
   return "/dashboard";
 }

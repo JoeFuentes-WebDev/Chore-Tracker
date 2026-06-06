@@ -1,7 +1,5 @@
 "use server";
 
-import { UserRole } from "@prisma/client";
-
 import { claimChoreForChild } from "@/lib/claim-chore";
 import { requireCurrentChildContext } from "@/lib/auth/get-current-child-context";
 import {
@@ -13,22 +11,7 @@ import {
   type CreateProposalInput,
 } from "@/lib/create-proposal";
 import { finishChoreForChild } from "@/lib/finish-chore";
-import { prisma } from "@/lib/prisma";
 import { startChoreForChild } from "@/lib/start-chore";
-
-async function revalidateParentSurfacesForChildFamily(familyId: string): Promise<void> {
-  const parentMembership = await prisma.familyMembership.findFirst({
-    where: {
-      familyId,
-      user: { role: UserRole.PARENT },
-    },
-    include: { user: { select: { slug: true } } },
-  });
-
-  if (parentMembership) {
-    revalidateParentDashboard(parentMembership.user.slug);
-  }
-}
 
 export async function claimChore(choreId: string): Promise<
   | { ok: true }
@@ -49,8 +32,8 @@ export async function claimChore(choreId: string): Promise<
       return result;
     }
 
-    revalidateChildBoard(child.user.slug);
-    await revalidateParentSurfacesForChildFamily(child.familyId);
+    revalidateChildBoard();
+    revalidateParentDashboard();
     return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -76,7 +59,7 @@ export async function startChore(choreId: string): Promise<
       return result;
     }
 
-    revalidateChildBoard(child.user.slug);
+    revalidateChildBoard();
     return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -102,8 +85,8 @@ export async function finishChore(choreId: string): Promise<
       return result;
     }
 
-    revalidateChildBoard(child.user.slug);
-    await revalidateParentSurfacesForChildFamily(child.familyId);
+    revalidateChildBoard();
+    revalidateParentDashboard();
     return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -130,8 +113,8 @@ export async function createProposal(input: CreateProposalInput): Promise<
       return result;
     }
 
-    revalidateChildBoard(child.user.slug);
-    await revalidateParentSurfacesForChildFamily(child.familyId);
+    revalidateChildBoard();
+    revalidateParentDashboard();
     return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };

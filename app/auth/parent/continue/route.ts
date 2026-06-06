@@ -17,5 +17,5 @@ export async function GET() {
     redirect(getParentSignInPath());
   }
 
-  redirect(getParentPostAuthPath(parentUser));
+  redirect(getParentPostAuthPath());
 }

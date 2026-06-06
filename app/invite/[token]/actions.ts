@@ -19,5 +19,5 @@ export async function acceptInvitation(
   }
 
   await setChildSessionUserId(result.userId);
-  redirect(getChildBoardPath({ slug: result.slug }));
+  redirect(getChildBoardPath());
 }

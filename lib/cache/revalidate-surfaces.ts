@@ -7,14 +7,15 @@ import {
 } from "@/lib/auth/parent-auth-paths";
 
 /** Invalidate parent dashboard at canonical and legacy paths. */
-export function revalidateParentDashboard(slug: string): void {
-  revalidatePath(getParentDashboardPath({ slug }));
+export function revalidateParentDashboard(): void {
+  revalidatePath(getParentDashboardPath());
   revalidatePath(getLegacyParentDashboardPath());
+  revalidatePath("/parent", "layout");
 }
 
 /** Invalidate child board at canonical and legacy paths. */
-export function revalidateChildBoard(slug: string): void {
-  revalidatePath(getChildBoardPath({ slug }));
+export function revalidateChildBoard(): void {
+  revalidatePath(getChildBoardPath());
   revalidatePath(getLegacyChildBoardPath());
 }
 

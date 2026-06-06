@@ -534,3 +534,17 @@ Each entry follows this format:
 
 **Revisit when:** Additional parent/child sub-routes (manage, settings) migrate under same slug prefix.
 
+---
+
+## TD-V2-13 — Flat Identity Routes (V2-M6.1)
+
+**Decision:** Canonical surfaces are `/parent` and `/child` with no user slug in the URL. Legacy `/dashboard`, `/board`, `/parent/[slug]`, and `/child/[slug]` redirect to flat routes. Session resolution (TD-V2-11) remains the sole authority for identity and family scoping. `User.slug` is retained in schema and generation logic but is not used for routing.
+
+**Alternatives:** Keep slug URLs (TD-V2-12); family slugs in URLs.
+
+**Rationale:** Private family app — display names belong in UI, not URLs. M5 already scoped all data by session; slugs added no security value.
+
+**Tradeoffs:** TD-V2-12 slug URLs deprecated via compatibility redirects only.
+
+**Revisit when:** Never for routing — slug column may be repurposed or dropped in schema cleanup milestone.
+
