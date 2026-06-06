@@ -1,6 +1,6 @@
-// ChoreTracker — Prisma schema (M1)
-// Target: Neon (Postgres). One family per deployment (TD-05).
-// Single Chore entity with lifecycle status (TD-15).
+// ChoreTracker — Prisma schema (V2-M1)
+// Target: Neon (Postgres). Multi-family; User-only identity (TD-V2-02).
+// Child model retained temporarily for migration rollback (TD-V2-06).
 
 generator client {
   provider = "prisma-client-js"
@@ -13,6 +13,11 @@ datasource db {
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
+
+enum UserRole {
+  PARENT
+  CHILD
+}
 
 enum ChoreStatus {
   AVAILABLE
@@ -48,20 +53,66 @@ enum NotificationEvent {
 }
 
 // ---------------------------------------------------------------------------
-// Models
+// Identity & tenancy (V2-M1)
 // ---------------------------------------------------------------------------
 
-/// Single household record per deployment (TD-05).
 model Family {
-  id          String   @id @default("singleton")
-  parentPhone String? // E.164; set during bootstrap (M2)
-  pinHash     String? // bcrypt hash; null = bootstrap mode (TD-04)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  children Child[]
+  memberships FamilyMembership[]
+  invitations Invitation[]
+  chores      Chore[]
+  proposals   Proposal[]
+  children    Child[] // deprecated — TD-V2-06
 }
 
+model User {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  email       String?  @unique
+  phone       String?
+  pinHash     String?
+  clerkUserId String?  @unique // V2-M2: Clerk parent identity
+  role        UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  membership     FamilyMembership?
+  assignedChores Chore[]           @relation("ChoreAssignee")
+  proposals      Proposal[]        @relation("ProposalAuthor")
+}
+
+model FamilyMembership {
+  id        String   @id @default(cuid())
+  familyId  String
+  userId    String   @unique
+  createdAt DateTime @default(now())
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+}
+
+model Invitation {
+  id         String    @id @default(cuid())
+  familyId   String
+  token      String    @unique
+  role       UserRole
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+}
+
+/// @deprecated Retained for migration rollback (TD-V2-06). App code uses User.
 model Child {
   id        String   @id @default(cuid())
   name      String
@@ -70,11 +121,15 @@ model Child {
   updatedAt DateTime @updatedAt
 
   family    Family     @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  chores    Chore[]
-  proposals Proposal[]
+  chores    Chore[]    @relation("LegacyChildChores")
+  proposals Proposal[] @relation("LegacyChildProposals")
 
   @@index([familyId])
 }
+
+// ---------------------------------------------------------------------------
+// Chore workflow
+// ---------------------------------------------------------------------------
 
 model Chore {
   id               String       @id @default(cuid())
@@ -82,44 +137,57 @@ model Chore {
   description      String?
   reward           Decimal      @db.Decimal(10, 2)
   status           ChoreStatus
-  childId          String? // null = Available (unassigned)
+  familyId         String
+  /// Legacy assignee FK — kept in sync with assignedUserId (TD-V2-07).
+  childId          String?
+  assignedUserId   String?
   rejectionComment String?
   createdBy        ChoreCreator
-  paid             Boolean      @default(false) // TD-13; meaningful when APPROVED
+  paid             Boolean      @default(false)
   sourceProposalId String?      @unique
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  child            Child?            @relation(fields: [childId], references: [id], onDelete: SetNull)
+  family           Family            @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  child            Child?            @relation("LegacyChildChores", fields: [childId], references: [id], onDelete: SetNull)
+  assignee         User?             @relation("ChoreAssignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
   sourceProposal   Proposal?         @relation(fields: [sourceProposalId], references: [id], onDelete: SetNull)
   notificationLogs NotificationLog[]
 
   @@index([status])
+  @@index([familyId])
   @@index([childId])
+  @@index([assignedUserId])
 }
 
 model Proposal {
-  id             String         @id @default(cuid())
-  name           String
-  askingReward   Decimal        @db.Decimal(10, 2)
-  counterReward  Decimal?       @db.Decimal(10, 2)
-  status         ProposalStatus @default(PENDING)
-  childId        String
-  acknowledgedAt DateTime? // TD-12: child ack after rejection
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id               String         @id @default(cuid())
+  name             String
+  askingReward     Decimal        @db.Decimal(10, 2)
+  counterReward    Decimal?       @db.Decimal(10, 2)
+  status           ProposalStatus @default(PENDING)
+  familyId         String
+  /// Legacy author FK — kept in sync with proposedByUserId (TD-V2-07).
+  childId          String
+  proposedByUserId String
+  acknowledgedAt   DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
-  child        Child  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  family       Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  child        Child  @relation("LegacyChildProposals", fields: [childId], references: [id], onDelete: Cascade)
+  author       User   @relation("ProposalAuthor", fields: [proposedByUserId], references: [id], onDelete: Cascade)
   createdChore Chore?
 
   @@index([status])
+  @@index([familyId])
   @@index([childId])
+  @@index([proposedByUserId])
 }
 
-/// SMS audit trail. State transitions are never blocked if SMS fails.
 model NotificationLog {
   id        String             @id @default(cuid())
-  choreId   String? // null for PIN_RESET events
+  choreId   String?
   event     NotificationEvent
   phone     String
   message   String

@@ -1,6 +1,6 @@
 import { ProposalStatus } from "@prisma/client";
 
-import { getDefaultChild } from "@/lib/get-default-child";
+import { getDefaultChildUser, getDefaultFamily } from "@/lib/get-default-user";
 import { prisma } from "@/lib/prisma";
 
 export interface CreateProposalInput {
@@ -34,13 +34,19 @@ export async function createProposalForChild(
     return { ok: false, error: validationError };
   }
 
-  const child = await getDefaultChild();
+  const [family, childUser] = await Promise.all([
+    getDefaultFamily(),
+    getDefaultChildUser(),
+  ]);
+
   const proposal = await prisma.proposal.create({
     data: {
       name: input.name.trim(),
       askingReward: input.askingReward,
       status: ProposalStatus.PENDING,
-      childId: child.id,
+      familyId: family.id,
+      proposedByUserId: childUser.id,
+      childId: childUser.id,
     },
   });
 

@@ -6,14 +6,18 @@ export type ClaimChoreResult =
   | { ok: true }
   | { ok: false; error: string };
 
-/** Transition a chore from AVAILABLE to CLAIMED and assign it to the child. */
+/** Transition a chore from AVAILABLE to CLAIMED and assign it to the child user. */
 export async function claimChoreForChild(
   choreId: string,
-  childId: string,
+  userId: string,
 ): Promise<ClaimChoreResult> {
   const result = await prisma.chore.updateMany({
     where: { id: choreId, status: ChoreStatus.AVAILABLE },
-    data: { status: ChoreStatus.CLAIMED, childId },
+    data: {
+      status: ChoreStatus.CLAIMED,
+      assignedUserId: userId,
+      childId: userId,
+    },
   });
 
   if (result.count === 0) {

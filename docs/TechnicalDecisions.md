@@ -356,3 +356,125 @@ Each entry follows this format:
 
 **Revisit when:** Payment history or per-chore settlement ships (explicitly out of scope for M12).
 
+---
+
+## V2 Technical Decisions
+
+---
+
+## TD-V2-01 — Multi-Family Architecture
+
+**Decision:** The database supports multiple families. Migrated production data retains `Family.id = "singleton"`. New families receive `cuid()` ids.
+
+**Alternatives:** Retain one-family-per-deployment (TD-05); rewrite singleton id on migration.
+
+**Rationale:** V2 requires multi-tenancy in a shared Neon database. Preserving `"singleton"` avoids cascading FK rewrites on production migration.
+
+**Tradeoffs:** One legacy id remains in the schema permanently unless a future cleanup migration rewrites it.
+
+**Revisit when:** Never for migrated production row unless a dedicated id-normalization milestone is approved.
+
+---
+
+## TD-V2-02 — User-Only Identity
+
+**Decision:** `User` is the sole identity entity. Roles are `PARENT` or `CHILD` via `UserRole` enum. No separate Parent or Child tables long-term.
+
+**Alternatives:** Keep `Child` as a profile table linked to `User`; separate Parent table.
+
+**Rationale:** Fewer concepts for onboarding, auth, and routing. One membership join path.
+
+**Tradeoffs:** Kid-specific fields (avatar, age) would require extending `User` or a profile extension table later.
+
+**Revisit when:** Kid-specific profile data beyond name/slug is required.
+
+---
+
+## TD-V2-03 — FamilyMembership Model
+
+**Decision:** `FamilyMembership` links users to families. `userId` is unique — one family per user in V2.
+
+**Alternatives:** Many-to-many membership (user in multiple families).
+
+**Rationale:** Matches household use case and simplifies session shape for V2-M2.
+
+**Tradeoffs:** Blended families or shared custody across households would require schema change.
+
+**Revisit when:** Product requires multi-family membership for a single user.
+
+---
+
+## TD-V2-04 — Family Scoping on Chore and Proposal
+
+**Decision:** `Chore.familyId` and `Proposal.familyId` are required. Authorization filtering lands in V2-M5; columns are populated in V2-M1.
+
+**Alternatives:** Infer family via `assignedUserId` / `Child.familyId` joins only.
+
+**Rationale:** Available chores have no assignee — family cannot be inferred from user FK alone.
+
+**Tradeoffs:** Mutations must set `familyId` explicitly until session-scoped helpers exist.
+
+**Revisit when:** V2-M5 authorization middleware ships.
+
+---
+
+## TD-V2-05 — UserRole vs ChoreCreator
+
+**Decision:** `UserRole` (identity) and `ChoreCreator` (provenance) are separate enums with overlapping labels (`PARENT`, `CHILD`).
+
+**Alternatives:** Single shared enum.
+
+**Rationale:** Identity role and chore authorship are different concepts; conflating enums causes import and client-boundary confusion.
+
+**Tradeoffs:** Developers must use the correct enum per context.
+
+**Revisit when:** Never — naming is intentional.
+
+---
+
+## TD-V2-06 — Child Model Deprecated (Temporary Retention)
+
+**Decision:** The V1 `Child` model is deprecated but **not dropped** in V2-M1. Application code uses `User` exclusively. `Child` rows remain for production rollback.
+
+**Alternatives:** Drop `Child` in V2-M1 (Option A); keep `Child` as permanent profile table.
+
+**Rationale:** Deployed production system — rollback to V1 app is possible while legacy table and `childId` columns exist.
+
+**Tradeoffs:** Redundant data until cleanup milestone. Must keep dual columns in sync on writes.
+
+**Revisit when:** Cleanup milestone after V2-M5 proves User-based flows in production.
+
+---
+
+## TD-V2-07 — Dual FK Transition (childId + assignedUserId)
+
+**Decision:** V2-M1 adds `assignedUserId` / `proposedByUserId` pointing to `User`. Legacy `childId` columns on `Chore` and `Proposal` are retained and kept in sync on writes. Migration preserves `Child.id` as `User.id` for existing rows.
+
+**Alternatives:** Rename-only migration with immediate `Child` drop.
+
+**Rationale:** Safer production migration and V1 app rollback path (TD-V2-06).
+
+**Tradeoffs:** Wider schema temporarily; mutations must update both FK columns when assigning.
+
+**Revisit when:** Cleanup milestone drops `childId` and `Child` table.
+
+---
+
+## TD-V2-08 — Clerk Parent Authentication (V2-M2)
+
+**Decision:** Parents authenticate via Clerk (`@clerk/nextjs`) with email/password. `User.clerkUserId` links Clerk identity to the app `User` row. Children are not Clerk users. Parent PIN auth is not used when `clerkUserId` is set.
+
+**Alternatives:** Auth.js credentials provider; custom JWT session.
+
+**Rationale:** Clerk handles sign-up, sign-in, session persistence, and password management without custom auth infrastructure. Clear separation from child PIN + trusted-device auth (V2-M4).
+
+**Tradeoffs:** Two auth systems (Clerk for parents, app-managed for children). New dependency and Clerk Dashboard configuration required.
+
+**Post-auth routing:** Centralized in `lib/auth/parent-auth-paths.ts` and `/auth/parent/continue`. M2 uses temporary `/dashboard`; M6 switches `getParentPostAuthPath()` to `/parent/[slug]`.
+
+**FamilyMembership:** Not created in M2. Authenticated parents without membership see an empty state until V2-M3.
+
+**Route protection:** Deferred to V2-M5. M2 middleware propagates Clerk session only.
+
+**Revisit when:** V2-M3 (family creation), V2-M5 (authorization), V2-M6 (canonical routes).
+

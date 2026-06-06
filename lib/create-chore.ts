@@ -1,5 +1,6 @@
 import { ChoreCreator, ChoreStatus } from "@prisma/client";
 
+import { getDefaultFamily } from "@/lib/get-default-user";
 import { prisma } from "@/lib/prisma";
 
 export interface CreateChoreInput {
@@ -32,6 +33,7 @@ export async function createChore(input: CreateChoreInput): Promise<CreateChoreR
     return { ok: false, error: validationError };
   }
 
+  const family = await getDefaultFamily();
   const description = input.description?.trim() ?? "";
   const chore = await prisma.chore.create({
     data: {
@@ -39,6 +41,7 @@ export async function createChore(input: CreateChoreInput): Promise<CreateChoreR
       description: description.length > 0 ? description : null,
       reward: input.reward,
       status: ChoreStatus.AVAILABLE,
+      familyId: family.id,
       createdBy: ChoreCreator.PARENT,
     },
   });

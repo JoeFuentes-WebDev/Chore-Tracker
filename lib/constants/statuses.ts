@@ -3,6 +3,13 @@
  * Values match Prisma schema enums; server code may still use @prisma/client.
  */
 
+export const UserRole = {
+  PARENT: "PARENT",
+  CHILD: "CHILD",
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
 export const ChoreStatus = {
   AVAILABLE: "AVAILABLE",
   CLAIMED: "CLAIMED",

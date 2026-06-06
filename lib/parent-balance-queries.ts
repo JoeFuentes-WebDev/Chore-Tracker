@@ -1,12 +1,18 @@
 import { ChoreStatus } from "@prisma/client";
 
+import { getDefaultFamily } from "@/lib/get-default-user";
 import { prisma } from "@/lib/prisma";
 import type { ParentApprovedBalance } from "@/lib/parent-dashboard-types";
 
 /** Parent approved balance read model — sum and count of unpaid approved chores. */
-export async function getParentApprovedBalance(): Promise<ParentApprovedBalance> {
+export async function getParentApprovedBalance(
+  familyId?: string,
+): Promise<ParentApprovedBalance> {
+  const resolvedFamilyId = familyId ?? (await getDefaultFamily()).id;
+
   const result = await prisma.chore.aggregate({
     where: {
+      familyId: resolvedFamilyId,
       status: ChoreStatus.APPROVED,
       paid: false,
     },

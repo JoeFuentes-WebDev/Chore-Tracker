@@ -1,8 +1,35 @@
-// Root route. The kid/parent mode is a client-side localStorage toggle
-// (see 6.1 / 7.5), so the entry point lands on the kid board by default.
+import Link from "next/link";
+
+import { Button } from "@/components/ui/Button";
+import {
+  getParentSignInPath,
+  getParentSignUpPath,
+} from "@/lib/auth/parent-auth-paths";
 
 export default function HomePage() {
-  // TODO: redirect to the appropriate landing screen based on the persisted
-  // mode (kid -> /board, parent -> /dashboard).
-  return null;
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-8 px-4 py-8">
+      <div className="text-center">
+        <h1 className="text-3xl font-semibold">Chore Tracker</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Manage chores and rewards for your family.
+        </p>
+      </div>
+      <div className="flex flex-col gap-3">
+        <Link href={getParentSignInPath()}>
+          <Button className="w-full">Parent sign in</Button>
+        </Link>
+        <Link href={getParentSignUpPath()}>
+          <Button variant="secondary" className="w-full">
+            Create parent account
+          </Button>
+        </Link>
+        <Link href="/board">
+          <Button variant="ghost" className="w-full">
+            Child board
+          </Button>
+        </Link>
+      </div>
+    </main>
+  );
 }

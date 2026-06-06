@@ -17,7 +17,9 @@ function buildAvailableChoreFromProposal(proposal: Proposal) {
     description: null as string | null,
     reward: proposal.askingReward,
     status: ChoreStatus.AVAILABLE,
+    familyId: proposal.familyId,
     createdBy: ChoreCreator.CHILD,
+    assignedUserId: null,
     childId: null,
   };
 }

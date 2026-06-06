@@ -1,5 +1,9 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
+
 import "./globals.css";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Chore Tracker",
@@ -15,13 +19,13 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // TODO: mount ModeToggle (top) and BottomNav (fixed bottom) around children.
-  // Add padding-bottom on the content container so the fixed nav never overlaps.
   return (
-    <html lang="en">
-      <body className="min-h-dvh bg-background text-foreground antialiased">
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className="min-h-dvh bg-background text-foreground antialiased">
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
