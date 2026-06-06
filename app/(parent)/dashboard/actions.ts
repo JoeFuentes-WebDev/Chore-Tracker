@@ -11,7 +11,9 @@ import {
 } from "@/lib/create-family";
 import { getClerkParentUser } from "@/lib/auth/get-clerk-parent-user";
 import { getParentFamilyContext } from "@/lib/auth/get-parent-family-context";
+import { createChildInvitation as createChildInvitationRecord } from "@/lib/create-invitation";
 import { denyProposalById } from "@/lib/deny-proposal";
+import { getInviteUrl } from "@/lib/invitations/invite-url";
 import { rejectChoreById } from "@/lib/reject-chore";
 import { settleApprovedBalance } from "@/lib/settle-balance";
 
@@ -34,6 +36,34 @@ export async function createFamily(input: CreateFamilyInput): Promise<
 
     revalidatePath("/dashboard");
     return result;
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function createChildInvitation(): Promise<
+  | { ok: true; inviteUrl: string; token: string; expiresAt: string }
+  | { ok: false; error: string }
+> {
+  try {
+    const context = await getParentFamilyContext();
+
+    if (context.kind !== "authenticated") {
+      return { ok: false, error: "Sign in and create a family to invite a child." };
+    }
+
+    const result = await createChildInvitationRecord(context.familyId);
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return {
+      ok: true,
+      token: result.token,
+      inviteUrl: getInviteUrl(result.token),
+      expiresAt: result.expiresAt.toISOString(),
+    };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
   }

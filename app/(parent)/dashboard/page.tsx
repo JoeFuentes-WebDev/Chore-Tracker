@@ -1,6 +1,7 @@
 import { ParentDashboardLayout } from "@/components/layout/ParentDashboardLayout";
 import { ApprovedBalanceCard } from "@/components/parent/ApprovedBalanceCard";
 import { CreateChoreForm } from "@/components/parent/CreateChoreForm";
+import { InviteChildPanel } from "@/components/parent/InviteChildPanel";
 import { NoFamilyEmptyState } from "@/components/parent/NoFamilyEmptyState";
 import { PendingApprovalList } from "@/components/parent/PendingApprovalList";
 import { ProposalReviewList } from "@/components/parent/ProposalReviewList";
@@ -26,6 +27,7 @@ export default async function DashboardPage() {
 
   return (
     <ParentDashboardLayout>
+      {context.kind === "authenticated" ? <InviteChildPanel /> : null}
       <ApprovedBalanceCard balance={approvedBalance} />
       <CreateChoreForm />
       <PendingApprovalList chores={pendingChores} />

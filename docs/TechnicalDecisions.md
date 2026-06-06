@@ -492,3 +492,17 @@ Each entry follows this format:
 
 **Revisit when:** V2-M4 (child invitation), V2-M8 (second parent, explicit roles if needed).
 
+---
+
+## TD-V2-10 — Child Invitation and Session (V2-M4)
+
+**Decision:** Parents invite children via a time-limited URL at `/invite/[token]`. Multiple active invitations per family are allowed. On accept, the child sets name + 4-digit PIN; PIN is hashed with `bcryptjs` and stored on `User.pinHash`. A legacy `Child` row is created with the same id as the new `User` for dual-FK compatibility (TD-V2-06/07). Child session is an httpOnly cookie (`choretracker_child_uid`) set on accept; no PIN return-login in M4.
+
+**Alternatives:** Clerk for children; single active invite per family; JWT in localStorage; `/join/{token}` route.
+
+**Rationale:** Keeps child auth separate from Clerk. Cookie session is sufficient for trusted-device persistence until M5 authorization. Invite URLs use `NEXT_PUBLIC_APP_URL` for environment-correct links.
+
+**Tradeoffs:** PIN return-login and QR code deferred. Board still falls back to V1 shim when no child cookie (until M5). No route protection on `/board` yet.
+
+**Revisit when:** V2-M5 (authorization, remove shims), future milestone for PIN return-login and QR.
+

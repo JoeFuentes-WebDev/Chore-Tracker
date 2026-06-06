@@ -1,6 +1,5 @@
 import type { Proposal } from "@prisma/client";
 
-import { getDefaultChildUser } from "@/lib/get-default-user";
 import { prisma } from "@/lib/prisma";
 import type { KidProposal, KidProposalsData } from "@/lib/kid-proposal-types";
 
@@ -14,11 +13,12 @@ function serializeProposal(proposal: Proposal): KidProposal {
   };
 }
 
-/** Kid proposals read model — all proposals for the default child user. */
-export async function getKidProposalsData(): Promise<KidProposalsData> {
-  const childUser = await getDefaultChildUser();
+/** Kid proposals read model — scoped to child user. */
+export async function getKidProposalsData(
+  childUserId: string,
+): Promise<KidProposalsData> {
   const proposals = await prisma.proposal.findMany({
-    where: { proposedByUserId: childUser.id },
+    where: { proposedByUserId: childUserId },
     orderBy: { createdAt: "desc" },
   });
 

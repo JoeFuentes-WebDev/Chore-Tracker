@@ -128,22 +128,29 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ### V2-M4 — Child Invitation
 
-**Goal:** Parent invites children; child onboards and can return on a trusted device.
+**Status:** ✓ Complete
 
-**Deliverables:**
+**Goal:** Parent invites children; child onboards via invite link and persists session on device.
 
-- Invite URL (`/join/{token}`) backed by `Invitation` model
-- QR code for invite link
-- Child onboarding: accept invite → choose name → choose PIN
-- Trusted device — family context remembered; child return login is PIN-only
+**Delivered:**
 
-**Out of scope:** Authorization enforcement (V2-M5), push notifications (V2-M7)
+- `/invite/[token]` — invite landing + join form (name, PIN, confirm PIN)
+- Parent dashboard **Invite child** panel (URL generation + copy)
+- `createChildInvitation` / `acceptInvitationByToken` server flows
+- `User` (CHILD) + `FamilyMembership` + legacy `Child` row on accept
+- httpOnly child session cookie (`choretracker_child_uid`)
+- Kid board scoped to child session (`getChildBoardContext`)
+- `bcryptjs` PIN hashing; `NEXT_PUBLIC_APP_URL` for invite URLs
+
+**Deferred:** PIN return-login, QR code, route protection (V2-M5)
+
+**Reference:** TD-V2-10 in `TechnicalDecisions.md`
 
 **Done when:**
 
-- Parent generates invite; child completes onboarding
-- Child session persists family context
-- Child can run full chore workflow after onboarding
+- Parent generates invite; child completes onboarding ✓
+- Child session persists family context ✓
+- Child can run full chore workflow after onboarding ✓
 
 ---
 
@@ -302,7 +309,7 @@ A new family can:
 | V2-M1 | Schema foundation | ✓ Complete |
 | V2-M2 | Parent auth (Clerk) | ✓ Complete |
 | V2-M3 | Family creation | ✓ Complete |
-| V2-M4 | Child invitation + PIN + trusted device | Pending |
+| V2-M4 | Child invitation + session cookie | ✓ Complete |
 | V2-M5 | Authorization | Pending |
 | V2-M6 | Dynamic routing | Pending |
 | V2-M7 | Push notifications | Pending |

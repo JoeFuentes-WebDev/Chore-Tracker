@@ -13,23 +13,48 @@ function serializeChore(chore: Chore): KidBoardChore {
   };
 }
 
-/** Kid board read model — unpaid approved earnings, paid total, available, and active chores. */
-export async function getKidBoardData(): Promise<KidBoardData> {
+export interface KidBoardQueryContext {
+  familyId: string;
+  childUserId: string;
+}
+
+/** Kid board read model — scoped to family and child user. */
+export async function getKidBoardData(
+  context: KidBoardQueryContext,
+): Promise<KidBoardData> {
+  const { familyId, childUserId } = context;
+  const familyScope = { familyId };
+
   const [earnings, paidEarnings, availableChores, activeChores] = await Promise.all([
     prisma.chore.aggregate({
-      where: { status: ChoreStatus.APPROVED, paid: false },
+      where: {
+        ...familyScope,
+        assignedUserId: childUserId,
+        status: ChoreStatus.APPROVED,
+        paid: false,
+      },
       _sum: { reward: true },
     }),
     prisma.chore.aggregate({
-      where: { status: ChoreStatus.APPROVED, paid: true },
+      where: {
+        ...familyScope,
+        assignedUserId: childUserId,
+        status: ChoreStatus.APPROVED,
+        paid: true,
+      },
       _sum: { reward: true },
     }),
     prisma.chore.findMany({
-      where: { status: ChoreStatus.AVAILABLE },
+      where: {
+        ...familyScope,
+        status: ChoreStatus.AVAILABLE,
+      },
       orderBy: { name: "asc" },
     }),
     prisma.chore.findMany({
       where: {
+        ...familyScope,
+        assignedUserId: childUserId,
         status: {
           in: [
             ChoreStatus.CLAIMED,

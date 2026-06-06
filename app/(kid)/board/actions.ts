@@ -8,7 +8,7 @@ import {
   type CreateProposalInput,
 } from "@/lib/create-proposal";
 import { finishChoreForChild } from "@/lib/finish-chore";
-import { getDefaultChildUser } from "@/lib/get-default-user";
+import { getChildBoardContext } from "@/lib/get-default-user";
 import { startChoreForChild } from "@/lib/start-chore";
 
 export async function claimChore(choreId: string): Promise<
@@ -16,8 +16,8 @@ export async function claimChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const childUser = await getDefaultChildUser();
-    const result = await claimChoreForChild(choreId, childUser.id);
+    const { user } = await getChildBoardContext();
+    const result = await claimChoreForChild(choreId, user.id);
 
     if (!result.ok) {
       return result;
@@ -35,8 +35,8 @@ export async function startChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const childUser = await getDefaultChildUser();
-    const result = await startChoreForChild(choreId, childUser.id);
+    const { user } = await getChildBoardContext();
+    const result = await startChoreForChild(choreId, user.id);
 
     if (!result.ok) {
       return result;
@@ -54,8 +54,8 @@ export async function finishChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const childUser = await getDefaultChildUser();
-    const result = await finishChoreForChild(choreId, childUser.id);
+    const { user } = await getChildBoardContext();
+    const result = await finishChoreForChild(choreId, user.id);
 
     if (!result.ok) {
       return result;
@@ -73,7 +73,11 @@ export async function createProposal(input: CreateProposalInput): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const result = await createProposalForChild(input);
+    const { user, familyId } = await getChildBoardContext();
+    const result = await createProposalForChild(input, {
+      childUserId: user.id,
+      familyId,
+    });
 
     if (!result.ok) {
       return result;
