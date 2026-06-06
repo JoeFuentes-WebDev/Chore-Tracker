@@ -27,6 +27,7 @@ export async function createChildInvitation(
   const invitation = await prisma.invitation.create({
     data: {
       familyId,
+      userId: null,
       token: randomUUID(),
       role: UserRole.CHILD,
       expiresAt,

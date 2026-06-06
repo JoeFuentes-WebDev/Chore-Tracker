@@ -2,25 +2,29 @@
 
 import { useState, useTransition } from "react";
 
-import { createChildInvitation } from "@/app/(parent)/parent/actions";
+import { reinviteChild } from "@/app/(parent)/parent/actions";
 import { InviteLinkResult } from "@/components/shared/InviteLinkResult";
 import { Button } from "@/components/ui/Button";
-import { CardSection } from "@/components/ui/Card";
 import { FormMessage } from "@/components/ui/FormField";
 
-export function InviteChildPanel() {
+export interface ReinviteChildRowProps {
+  childId: string;
+  childName: string;
+}
+
+export function ReinviteChildRow({ childId, childName }: ReinviteChildRowProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
-  function handleInviteClick() {
+  function handleReinviteClick() {
     setError(null);
     setCopyMessage(null);
 
     startTransition(async () => {
-      const result = await createChildInvitation();
+      const result = await reinviteChild(childId);
 
       if (!result.ok) {
         setError(result.error);
@@ -48,30 +52,28 @@ export function InviteChildPanel() {
   }
 
   return (
-    <CardSection aria-label="Invite child">
-      <p className="text-lg font-medium">Invite a child</p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Generate a link for a new child to join this family.
-      </p>
-      <div className="mt-4 flex flex-col gap-3">
+    <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-medium">{childName}</p>
         <Button
           variant="secondary"
-          className="w-full"
-          onClick={handleInviteClick}
+          size="sm"
+          onClick={handleReinviteClick}
           disabled={isPending}
         >
-          {isPending ? "Generating…" : "Invite child"}
+          {isPending ? "Generating…" : "Reinvite"}
         </Button>
-        {error ? <FormMessage variant="error">{error}</FormMessage> : null}
-        {inviteUrl ? (
-          <InviteLinkResult
-            inviteUrl={inviteUrl}
-            expiresAt={expiresAt}
-            onCopy={handleCopyClick}
-            copyMessage={copyMessage}
-          />
-        ) : null}
       </div>
-    </CardSection>
+      {error ? <FormMessage variant="error">{error}</FormMessage> : null}
+      {inviteUrl ? (
+        <InviteLinkResult
+          inviteUrl={inviteUrl}
+          expiresAt={expiresAt}
+          onCopy={handleCopyClick}
+          copyMessage={copyMessage}
+          linkLabel="Recovery link"
+        />
+      ) : null}
+    </div>
   );
 }

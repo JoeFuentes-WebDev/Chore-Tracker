@@ -2,6 +2,7 @@ import { UserRole } from "@prisma/client";
 
 import { generateUniqueUserSlug } from "@/lib/auth/generate-user-slug";
 import { hashPin, isValidPin } from "@/lib/auth/hash-pin";
+import { isRecoveryInvitation } from "@/lib/invitations/is-recovery-invitation";
 import { validateInvitationForAccept } from "@/lib/invitations/validate-invitation";
 import { prisma } from "@/lib/prisma";
 
@@ -76,6 +77,13 @@ export async function acceptInvitationByToken(
 
   if (validInvitation.role !== UserRole.CHILD) {
     return { ok: false, error: "This invitation is invalid." };
+  }
+
+  if (isRecoveryInvitation(validInvitation)) {
+    return {
+      ok: false,
+      error: "This link restores an existing account. Use Continue on the recovery page.",
+    };
   }
 
   const trimmedName = input.name.trim();

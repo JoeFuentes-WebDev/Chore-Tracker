@@ -14,6 +14,7 @@ import {
   type CreateFamilyInput,
 } from "@/lib/create-family";
 import { createChildInvitation as createChildInvitationRecord } from "@/lib/create-invitation";
+import { createRecoveryInvitation } from "@/lib/create-recovery-invitation";
 import { denyProposalById } from "@/lib/deny-proposal";
 import { getInviteUrl } from "@/lib/invitations/invite-url";
 import { rejectChoreById } from "@/lib/reject-chore";
@@ -55,6 +56,34 @@ export async function createChildInvitation(): Promise<
     }
 
     const result = await createChildInvitationRecord(parent.familyId);
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return {
+      ok: true,
+      token: result.token,
+      inviteUrl: getInviteUrl(result.token),
+      expiresAt: result.expiresAt.toISOString(),
+    };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function reinviteChild(childUserId: string): Promise<
+  | { ok: true; inviteUrl: string; token: string; expiresAt: string }
+  | { ok: false; error: string }
+> {
+  try {
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await createRecoveryInvitation(parent.familyId, childUserId);
 
     if (!result.ok) {
       return result;

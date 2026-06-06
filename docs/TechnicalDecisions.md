@@ -548,3 +548,19 @@ Each entry follows this format:
 
 **Revisit when:** Never for routing — slug column may be repurposed or dropped in schema cleanup milestone.
 
+---
+
+## TD-V2-14 — Child Identity & Recovery Model (V2-M7)
+
+**Decision:** Normal child usage is identity via a long-lived httpOnly session cookie (`choretracker_child_uid`, ~400 days). The cookie is convenience-oriented — not a security inactivity timeout. Children who return after weeks or months retain access if the cookie is still present. When the cookie is lost (new device, cleared browser data), the child sees `ChildSessionEmptyState` on `/child` with no self-service recovery. Parents restore access by generating a recovery invitation (`Invitation.userId` linked to existing child); accept issues a fresh cookie only — no new User, FamilyMembership, or Child rows.
+
+**Alternatives:** Child login screen; forgot/reset PIN; PIN re-entry on recovery; session cookies without maxAge (browser session only).
+
+**Rationale:** Parents control family membership. Children are not Clerk users. PIN is collected at onboarding and stored hashed but has no login flow — PIN recovery would require child self-service auth explicitly rejected by product model.
+
+**Security:** Recovery invites are single-use, expiring, family-scoped, and child-scoped. Accept re-verifies FamilyMembership before setting cookie. Net-new invites (`userId` null) remain separate onboarding path.
+
+**Tradeoffs:** Lost cookie requires parent action. Long-lived cookie on shared devices is a household trust assumption (acceptable for private family PWA).
+
+**Revisit when:** Optional PIN return-login milestone; push notifications (M8) for parent-initiated nudges.
+

@@ -84,6 +84,7 @@ model User {
   membership     FamilyMembership?
   assignedChores Chore[]           @relation("ChoreAssignee")
   proposals      Proposal[]        @relation("ProposalAuthor")
+  invitations    Invitation[]      @relation("RecoveryInvitations")
 }
 
 model FamilyMembership {
@@ -101,6 +102,7 @@ model FamilyMembership {
 model Invitation {
   id         String    @id @default(cuid())
   familyId   String
+  userId     String?   // V2-M7: set for recovery invites linked to existing child
   token      String    @unique
   role       UserRole
   expiresAt  DateTime
@@ -108,8 +110,10 @@ model Invitation {
   createdAt  DateTime  @default(now())
 
   family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User?  @relation("RecoveryInvitations", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([familyId])
+  @@index([userId])
 }
 
 /// @deprecated Retained for migration rollback (TD-V2-06). App code uses User.

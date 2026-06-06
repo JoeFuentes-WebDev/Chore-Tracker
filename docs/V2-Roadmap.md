@@ -58,7 +58,8 @@ Designed for AI-assisted implementation using Cursor milestone prompts.
 |-----------|----------|
 | V2-M2 | **Clerk** — parent authentication |
 | V2-M4 | Child PIN, trusted device |
-| V2-M7 | Web Push (service worker, VAPID) |
+| V2-M7 | Child device recovery (reinvite) |
+| V2-M8 | Web Push (service worker, VAPID) |
 
 New dependencies require explicit approval before install (see `.cursorrules`).
 
@@ -210,7 +211,33 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M7 — Push Notifications
+### V2-M7 — Child Device Recovery
+
+**Status:** ✓ Complete
+
+**Goal:** Parent restores existing child access on a new device when the child session cookie is lost.
+
+**Delivered:**
+
+- `Invitation.userId` — recovery invites linked to existing child
+- Manage Children panel on `/parent` with Reinvite per child
+- Recovery accept flow — cookie only, no duplicate User/Membership/Child
+- Long-lived child session cookie (~400 days, convenience-oriented)
+- Updated `ChildSessionEmptyState` for device-not-connected messaging
+- Net-new child invite flow unchanged (name + PIN)
+
+**Reference:** TD-V2-14 in `TechnicalDecisions.md`
+
+**Done when:**
+
+- Parent can reinvite existing child ✓
+- Child opens recovery URL → session restored ✓
+- Existing history preserved ✓
+- No duplicate records ✓
+
+---
+
+### V2-M8 — Push Notifications
 
 **Goal:** Web push for parent and child.
 
@@ -230,7 +257,7 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M8 — Family Management
+### V2-M9 — Family Management
 
 **Goal:** Manage household members after initial setup.
 
@@ -247,7 +274,7 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M9 — User Settings
+### V2-M10 — User Settings
 
 **Goal:** Self-service profile and preferences.
 
@@ -255,7 +282,7 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 - Change PIN (child)
 - Edit profile (name, phone for parent)
-- Notification preferences (pairs with V2-M7)
+- Notification preferences (pairs with V2-M8)
 
 **Done when:**
 
@@ -310,7 +337,7 @@ A new family can:
 1. Parent signs up (Clerk)
 2. Create a family
 3. Invite and onboard a child
-4. Login (parent via Clerk; child via PIN on trusted device)
+4. Parent via Clerk; child via long-lived session cookie (parent reinvite for lost device)
 5. Create chores
 6. Complete chores
 7. Propose chores
@@ -332,6 +359,7 @@ A new family can:
 | V2-M5 | Identity resolution & family scoping | ✓ Complete |
 | V2-M6 | Identity URLs (superseded by M6.1) | ✓ Complete |
 | V2-M6.1 | Flat `/parent` and `/child` routes | ✓ Complete |
-| V2-M7 | Push notifications | Pending |
-| V2-M8 | Family management | Pending |
-| V2-M9 | User settings | Pending |
+| V2-M7 | Child device recovery | ✓ Complete |
+| V2-M8 | Push notifications | Pending |
+| V2-M9 | Family management | Pending |
+| V2-M10 | User settings | Pending |
