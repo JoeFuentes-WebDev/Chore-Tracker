@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 
-import { createChore } from "@/app/(parent)/dashboard/actions";
+import { createChore } from "@/app/(parent)/parent/actions";
 import { Button } from "@/components/ui/Button";
 import {
   FormField,

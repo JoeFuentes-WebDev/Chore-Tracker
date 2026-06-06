@@ -13,7 +13,7 @@ export interface AcceptInvitationInput {
 }
 
 export type AcceptInvitationResult =
-  | { ok: true; userId: string }
+  | { ok: true; userId: string; slug: string }
   | { ok: false; error: string };
 
 const MIN_NAME_LENGTH = 2;
@@ -124,7 +124,7 @@ export async function acceptInvitationByToken(
       return childUser.id;
     });
 
-    return { ok: true, userId };
+    return { ok: true, userId, slug };
   } catch (error) {
     if (error instanceof Error && error.message === "INVITATION_ALREADY_USED") {
       return { ok: false, error: "This invitation has already been used." };

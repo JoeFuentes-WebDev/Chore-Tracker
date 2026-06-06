@@ -1,6 +1,6 @@
 "use client";
 
-import { claimChore, finishChore, startChore } from "@/app/(kid)/board/actions";
+import { claimChore, finishChore, startChore } from "@/app/(kid)/child/actions";
 import {
   Card,
   CardContent,

@@ -7,6 +7,7 @@ import {
   type AcceptInvitationInput,
 } from "@/lib/accept-invitation";
 import { setChildSessionUserId } from "@/lib/auth/child-session";
+import { getChildBoardPath } from "@/lib/auth/child-auth-paths";
 
 export async function acceptInvitation(
   input: AcceptInvitationInput,
@@ -18,5 +19,5 @@ export async function acceptInvitation(
   }
 
   await setChildSessionUserId(result.userId);
-  redirect("/board");
+  redirect(getChildBoardPath({ slug: result.slug }));
 }

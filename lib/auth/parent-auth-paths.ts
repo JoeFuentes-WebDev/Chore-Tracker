@@ -8,22 +8,27 @@ export function getParentSignUpPath(): string {
   return "/sign-up";
 }
 
-/** Post-auth redirect handler — centralizes M2 → M6 route migration. */
+/** Post-auth redirect handler — centralizes post-Clerk routing. */
 export function getParentPostAuthHandlerPath(): string {
   return "/auth/parent/continue";
 }
 
-/**
- * Destination after parent authentication.
- * M2: temporary flat /dashboard.
- * M6: return `/parent/${user.slug}` (or `/parent/${user.slug}/dashboard`).
- */
+/** Canonical parent dashboard URL. Slug is presentation only. */
+export function getParentDashboardPath(user: { slug: string }): string {
+  return `/parent/${user.slug}`;
+}
+
+/** Destination after parent authentication. */
 export function getParentPostAuthPath(user: { slug: string }): string {
-  void user;
-  return "/dashboard";
+  return getParentDashboardPath(user);
 }
 
 /** Where Clerk sends the user after sign-out. */
 export function getParentSignOutRedirectPath(): string {
   return "/";
+}
+
+/** Legacy flat dashboard route — redirects to canonical parent URL. */
+export function getLegacyParentDashboardPath(): string {
+  return "/dashboard";
 }

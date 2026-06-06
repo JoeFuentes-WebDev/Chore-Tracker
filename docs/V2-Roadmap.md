@@ -182,21 +182,28 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M6 — Dynamic Routing
+### V2-M6 — Human-Friendly Identity URLs
 
-**Goal:** User-scoped URLs; legacy redirects.
+**Status:** ✓ Complete
 
-**Deliverables:**
+**Goal:** User-scoped canonical URLs; legacy redirects preserve bookmarks.
 
-- `/parent/[slug]/…` — parent surfaces
-- `/child/[slug]/…` — child surfaces
-- Redirects: `/dashboard` → `/parent/{slug}/dashboard`, `/board` → `/child/{slug}/board`
-- `revalidatePath` updates across server actions
+**Delivered:**
+
+- `/parent/[slug]` — parent dashboard (session authoritative; slug canonicalization)
+- `/child/[slug]` — child board (session authoritative; slug canonicalization)
+- `/dashboard` → `/parent/{slug}` or `/sign-in`
+- `/board` → `/child/{slug}` or empty state when unauthenticated
+- `getParentDashboardPath`, `getChildBoardPath`, `revalidate-surfaces` helpers
+- Post-auth and invite accept redirect to canonical URLs
+
+**Reference:** TD-V2-12 in `TechnicalDecisions.md`
 
 **Done when:**
 
-- Routes generated from user identity
-- Existing workflows preserved at new paths
+- Routes generated from user identity ✓
+- Wrong slug redirects to session user's slug ✓
+- M5 authorization unchanged ✓
 
 ---
 
@@ -320,7 +327,7 @@ A new family can:
 | V2-M3 | Family creation | ✓ Complete |
 | V2-M4 | Child invitation + session cookie | ✓ Complete |
 | V2-M5 | Identity resolution & family scoping | ✓ Complete |
-| V2-M6 | Dynamic routing | Pending |
+| V2-M6 | Human-friendly identity URLs | ✓ Complete |
 | V2-M7 | Push notifications | Pending |
 | V2-M8 | Family management | Pending |
 | V2-M9 | User settings | Pending |

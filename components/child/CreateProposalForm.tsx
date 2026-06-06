@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 
-import { createProposal } from "@/app/(kid)/board/actions";
+import { createProposal } from "@/app/(kid)/child/actions";
 import { Button } from "@/components/ui/Button";
 import {
   FormField,

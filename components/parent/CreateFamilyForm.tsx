@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type ChangeEvent, type FormEvent } from "react";
 
-import { createFamily } from "@/app/(parent)/dashboard/actions";
+import { createFamily } from "@/app/(parent)/parent/actions";
 import { Button } from "@/components/ui/Button";
 import {
   FormField,

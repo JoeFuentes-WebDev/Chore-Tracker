@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type MouseEvent } from "react";
 
-import { payBalance } from "@/app/(parent)/dashboard/actions";
+import { payBalance } from "@/app/(parent)/parent/actions";
 import { Button } from "@/components/ui/Button";
 import { formatReward } from "@/lib/utils";
 

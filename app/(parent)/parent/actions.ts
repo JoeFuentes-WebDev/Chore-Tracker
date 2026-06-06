@@ -1,11 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { acceptProposalById } from "@/lib/accept-proposal";
 import { approveChoreById } from "@/lib/approve-chore";
 import { getClerkParentUser } from "@/lib/auth/get-clerk-parent-user";
 import { requireCurrentParentFamily } from "@/lib/auth/get-parent-family-context";
+import {
+  revalidateChildSurfaces,
+  revalidateParentDashboard,
+} from "@/lib/cache/revalidate-surfaces";
 import { createChore as createChoreRecord, type CreateChoreInput } from "@/lib/create-chore";
 import {
   createFamilyForUser,
@@ -34,7 +36,7 @@ export async function createFamily(input: CreateFamilyInput): Promise<
       return result;
     }
 
-    revalidatePath("/dashboard");
+    revalidateParentDashboard(parentUser.slug);
     return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -86,8 +88,8 @@ export async function approveChore(choreId: string): Promise<
       return result;
     }
 
-    revalidatePath("/dashboard");
-    revalidatePath("/board");
+    revalidateParentDashboard(parent.user.slug);
+    revalidateChildSurfaces();
     return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -111,8 +113,8 @@ export async function rejectChore(choreId: string): Promise<
       return result;
     }
 
-    revalidatePath("/dashboard");
-    revalidatePath("/board");
+    revalidateParentDashboard(parent.user.slug);
+    revalidateChildSurfaces();
     return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -141,7 +143,7 @@ export async function createChore(
       return result;
     }
 
-    revalidatePath("/board");
+    revalidateChildSurfaces();
     return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -167,8 +169,8 @@ export async function acceptProposal(proposalId: string): Promise<
       return result;
     }
 
-    revalidatePath("/dashboard");
-    revalidatePath("/board");
+    revalidateParentDashboard(parent.user.slug);
+    revalidateChildSurfaces();
     return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -194,8 +196,8 @@ export async function denyProposal(proposalId: string): Promise<
       return result;
     }
 
-    revalidatePath("/dashboard");
-    revalidatePath("/board");
+    revalidateParentDashboard(parent.user.slug);
+    revalidateChildSurfaces();
     return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
@@ -219,8 +221,8 @@ export async function payBalance(): Promise<
       return result;
     }
 
-    revalidatePath("/dashboard");
-    revalidatePath("/board");
+    revalidateParentDashboard(parent.user.slug);
+    revalidateChildSurfaces();
     return result;
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 
-import { createChildInvitation } from "@/app/(parent)/dashboard/actions";
+import { createChildInvitation } from "@/app/(parent)/parent/actions";
 import { Button } from "@/components/ui/Button";
 import { CardSection } from "@/components/ui/Card";
 import { FormMessage } from "@/components/ui/FormField";

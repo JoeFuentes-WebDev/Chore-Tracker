@@ -520,3 +520,17 @@ Each entry follows this format:
 
 **Revisit when:** V2-M6 (dynamic routes, middleware), schema cleanup milestone.
 
+---
+
+## TD-V2-12 — Human-Friendly Identity URLs (V2-M6)
+
+**Decision:** Canonical parent and child surfaces live at `/parent/[slug]` and `/child/[slug]`. Legacy `/dashboard` and `/board` redirect to the session user's slug URL. Route `slug` is presentation only — identity, authorization, and `familyId` always come from session resolution (TD-V2-11). Mismatched slug redirects to the session user's canonical path.
+
+**Alternatives:** Nested paths (`/parent/[slug]/dashboard`); family slugs in URLs; authorize by slug param.
+
+**Rationale:** Human-readable bookmarks without exposing family as a public routing concept. Preserves M5 security model.
+
+**Tradeoffs:** Server actions must revalidate canonical paths plus legacy redirects. Parent actions affecting child data use layout-level revalidation under `/child`.
+
+**Revisit when:** Additional parent/child sub-routes (manage, settings) migrate under same slug prefix.
+
