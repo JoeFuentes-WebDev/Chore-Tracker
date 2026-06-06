@@ -110,20 +110,19 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ### V2-M3 — Family Creation
 
+**Status:** ✓ Complete
+
 **Goal:** Authenticated parent creates a family.
 
-**Deliverables:**
+**Delivered:**
 
-- Create-family flow post-Clerk sign-up
-- `Family` record + `FamilyMembership` for parent
-- Parent lands in dashboard for their family
+- Create-family form on dashboard empty state
+- `lib/create-family.ts` — transactional `Family` + `FamilyMembership`
+- `createFamily` server action (Clerk-authenticated only)
+- Chore creation scoped to authenticated parent's `familyId`
+- Unauthenticated `/dashboard` retains V1 shim behavior
 
-**Out of scope:** Child invitation (V2-M4), dynamic routing (V2-M6)
-
-**Done when:**
-
-- New parent can create a family without seeded data
-- Parent user linked to family via membership
+**Reference:** TD-V2-09
 
 ---
 
@@ -302,7 +301,7 @@ A new family can:
 |-----------|-------|--------|
 | V2-M1 | Schema foundation | ✓ Complete |
 | V2-M2 | Parent auth (Clerk) | ✓ Complete |
-| V2-M3 | Family creation | Pending |
+| V2-M3 | Family creation | ✓ Complete |
 | V2-M4 | Child invitation + PIN + trusted device | Pending |
 | V2-M5 | Authorization | Pending |
 | V2-M6 | Dynamic routing | Pending |

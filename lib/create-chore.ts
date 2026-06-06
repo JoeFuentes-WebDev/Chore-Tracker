@@ -7,6 +7,7 @@ export interface CreateChoreInput {
   name: string;
   description?: string;
   reward: number;
+  familyId?: string;
 }
 
 export type CreateChoreResult =
@@ -33,7 +34,9 @@ export async function createChore(input: CreateChoreInput): Promise<CreateChoreR
     return { ok: false, error: validationError };
   }
 
-  const family = await getDefaultFamily();
+  const family = input.familyId
+    ? { id: input.familyId }
+    : await getDefaultFamily();
   const description = input.description?.trim() ?? "";
   const chore = await prisma.chore.create({
     data: {

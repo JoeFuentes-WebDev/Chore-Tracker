@@ -478,3 +478,17 @@ Each entry follows this format:
 
 **Revisit when:** V2-M3 (family creation), V2-M5 (authorization), V2-M6 (canonical routes).
 
+---
+
+## TD-V2-09 — Parent Family Creation (V2-M3)
+
+**Decision:** Authenticated parents without a `FamilyMembership` create a family via a dashboard form. A single transaction creates `Family` + `FamilyMembership`. The creating parent is the implicit owner (no admin role field). One family per user enforced by `FamilyMembership.userId @unique`.
+
+**Alternatives:** Separate onboarding route; admin role on membership; auto-create family at Clerk sign-up.
+
+**Rationale:** Keeps M3 scope minimal. Parent must name their household. Membership gate is already in schema.
+
+**Tradeoffs:** No invite flow until M4. Chore creation must pass authenticated `familyId` — shim `getDefaultFamily()` remains for anonymous dashboard only.
+
+**Revisit when:** V2-M4 (child invitation), V2-M8 (second parent, explicit roles if needed).
+
