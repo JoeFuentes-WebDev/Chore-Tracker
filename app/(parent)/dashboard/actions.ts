@@ -4,13 +4,13 @@ import { revalidatePath } from "next/cache";
 
 import { acceptProposalById } from "@/lib/accept-proposal";
 import { approveChoreById } from "@/lib/approve-chore";
+import { getClerkParentUser } from "@/lib/auth/get-clerk-parent-user";
+import { requireCurrentParentFamily } from "@/lib/auth/get-parent-family-context";
 import { createChore as createChoreRecord, type CreateChoreInput } from "@/lib/create-chore";
 import {
   createFamilyForUser,
   type CreateFamilyInput,
 } from "@/lib/create-family";
-import { getClerkParentUser } from "@/lib/auth/get-clerk-parent-user";
-import { getParentFamilyContext } from "@/lib/auth/get-parent-family-context";
 import { createChildInvitation as createChildInvitationRecord } from "@/lib/create-invitation";
 import { denyProposalById } from "@/lib/deny-proposal";
 import { getInviteUrl } from "@/lib/invitations/invite-url";
@@ -46,13 +46,13 @@ export async function createChildInvitation(): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const context = await getParentFamilyContext();
+    const parent = await requireCurrentParentFamily();
 
-    if (context.kind !== "authenticated") {
-      return { ok: false, error: "Sign in and create a family to invite a child." };
+    if (!parent.ok) {
+      return parent;
     }
 
-    const result = await createChildInvitationRecord(context.familyId);
+    const result = await createChildInvitationRecord(parent.familyId);
 
     if (!result.ok) {
       return result;
@@ -74,7 +74,13 @@ export async function approveChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const result = await approveChoreById(choreId);
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await approveChoreById(choreId, { familyId: parent.familyId });
 
     if (!result.ok) {
       return result;
@@ -93,7 +99,13 @@ export async function rejectChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const result = await rejectChoreById(choreId);
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await rejectChoreById(choreId, { familyId: parent.familyId });
 
     if (!result.ok) {
       return result;
@@ -107,18 +119,22 @@ export async function rejectChore(choreId: string): Promise<
   }
 }
 
-export async function createChore(input: CreateChoreInput): Promise<
+export async function createChore(
+  input: Omit<CreateChoreInput, "familyId">,
+): Promise<
   | { ok: true; choreId: string }
   | { ok: false; error: string }
 > {
   try {
-    const context = await getParentFamilyContext();
-    const familyId =
-      context.kind === "authenticated" ? context.familyId : undefined;
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
 
     const result = await createChoreRecord({
       ...input,
-      familyId,
+      familyId: parent.familyId,
     });
 
     if (!result.ok) {
@@ -137,7 +153,15 @@ export async function acceptProposal(proposalId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const result = await acceptProposalById(proposalId);
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await acceptProposalById(proposalId, {
+      familyId: parent.familyId,
+    });
 
     if (!result.ok) {
       return result;
@@ -156,7 +180,15 @@ export async function denyProposal(proposalId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const result = await denyProposalById(proposalId);
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await denyProposalById(proposalId, {
+      familyId: parent.familyId,
+    });
 
     if (!result.ok) {
       return result;
@@ -175,7 +207,13 @@ export async function payBalance(): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const result = await settleApprovedBalance();
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await settleApprovedBalance({ familyId: parent.familyId });
 
     if (!result.ok) {
       return result;

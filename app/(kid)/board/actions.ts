@@ -8,7 +8,7 @@ import {
   type CreateProposalInput,
 } from "@/lib/create-proposal";
 import { finishChoreForChild } from "@/lib/finish-chore";
-import { getChildBoardContext } from "@/lib/get-default-user";
+import { requireCurrentChildContext } from "@/lib/auth/get-current-child-context";
 import { startChoreForChild } from "@/lib/start-chore";
 
 export async function claimChore(choreId: string): Promise<
@@ -16,8 +16,15 @@ export async function claimChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const { user } = await getChildBoardContext();
-    const result = await claimChoreForChild(choreId, user.id);
+    const child = await requireCurrentChildContext();
+
+    if (!child.ok) {
+      return child;
+    }
+
+    const result = await claimChoreForChild(choreId, child.user.id, {
+      familyId: child.familyId,
+    });
 
     if (!result.ok) {
       return result;
@@ -35,8 +42,15 @@ export async function startChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const { user } = await getChildBoardContext();
-    const result = await startChoreForChild(choreId, user.id);
+    const child = await requireCurrentChildContext();
+
+    if (!child.ok) {
+      return child;
+    }
+
+    const result = await startChoreForChild(choreId, child.user.id, {
+      familyId: child.familyId,
+    });
 
     if (!result.ok) {
       return result;
@@ -54,8 +68,15 @@ export async function finishChore(choreId: string): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const { user } = await getChildBoardContext();
-    const result = await finishChoreForChild(choreId, user.id);
+    const child = await requireCurrentChildContext();
+
+    if (!child.ok) {
+      return child;
+    }
+
+    const result = await finishChoreForChild(choreId, child.user.id, {
+      familyId: child.familyId,
+    });
 
     if (!result.ok) {
       return result;
@@ -73,10 +94,15 @@ export async function createProposal(input: CreateProposalInput): Promise<
   | { ok: false; error: string }
 > {
   try {
-    const { user, familyId } = await getChildBoardContext();
+    const child = await requireCurrentChildContext();
+
+    if (!child.ok) {
+      return child;
+    }
+
     const result = await createProposalForChild(input, {
-      childUserId: user.id,
-      familyId,
+      childUserId: child.user.id,
+      familyId: child.familyId,
     });
 
     if (!result.ok) {

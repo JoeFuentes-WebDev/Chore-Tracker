@@ -1,6 +1,5 @@
 import { ChoreStatus } from "@prisma/client";
 
-import { getDefaultFamily } from "@/lib/get-default-user";
 import { getParentApprovedBalance } from "@/lib/parent-balance-queries";
 import { prisma } from "@/lib/prisma";
 import type {
@@ -11,25 +10,23 @@ import type {
 
 /** Parent dashboard read model — pending approvals, proposals, and approved balance. */
 export async function getParentDashboardData(
-  familyId?: string,
+  familyId: string,
 ): Promise<ParentDashboardData> {
-  const resolvedFamilyId = familyId ?? (await getDefaultFamily()).id;
-
   const [chores, proposals, approvedBalance] = await Promise.all([
     prisma.chore.findMany({
       where: {
-        familyId: resolvedFamilyId,
+        familyId,
         status: ChoreStatus.PENDING_APPROVAL,
       },
       include: { assignee: { select: { name: true } } },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.proposal.findMany({
-      where: { familyId: resolvedFamilyId },
+      where: { familyId },
       include: { author: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    getParentApprovedBalance(resolvedFamilyId),
+    getParentApprovedBalance(familyId),
   ]);
 
   const pendingChores: ParentPendingChore[] = chores.map((chore) => ({

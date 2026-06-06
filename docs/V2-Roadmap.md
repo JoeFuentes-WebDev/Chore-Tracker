@@ -154,22 +154,31 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M5 — Authorization
+### V2-M5 — Identity Resolution & Family Scoping
 
-**Goal:** Enforce family isolation; replace V1 default-user shims.
+**Status:** ✓ Complete
 
-**Deliverables:**
+**Goal:** Every query and mutation resolves identity and family from session; remove V1 default-family shims.
 
-- Session-scoped queries (`familyId` from session)
-- All `lib/*` mutations and reads filtered by family
-- Protected routes (middleware)
-- Remove `getDefaultChildUser()` / `getDefaultFamily()` shims
+**Delivered:**
+
+- `getCurrentParentContext()` / `requireCurrentParentFamily()` — Clerk → User → Family
+- `getCurrentChildContext()` / `requireCurrentChildContext()` — cookie → User → Family
+- All chore and proposal mutations scoped by `familyId` from session
+- Parent dashboard queries require resolved `familyId`
+- Anonymous `/dashboard` redirects to `/sign-in`
+- `/board` without child session shows empty state (no default child)
+- Deleted `lib/get-default-user.ts`
+
+**Deferred:** Middleware route protection (M6), PIN return-login
+
+**Reference:** TD-V2-11 in `TechnicalDecisions.md`
 
 **Done when:**
 
-- Parent sees only their family's data
-- Child sees only their family's data
-- Unauthorized access blocked
+- Parent sees only their family's data ✓
+- Child sees only their family's data ✓
+- Cross-family mutations blocked ✓
 
 ---
 
@@ -310,7 +319,7 @@ A new family can:
 | V2-M2 | Parent auth (Clerk) | ✓ Complete |
 | V2-M3 | Family creation | ✓ Complete |
 | V2-M4 | Child invitation + session cookie | ✓ Complete |
-| V2-M5 | Authorization | Pending |
+| V2-M5 | Identity resolution & family scoping | ✓ Complete |
 | V2-M6 | Dynamic routing | Pending |
 | V2-M7 | Push notifications | Pending |
 | V2-M8 | Family management | Pending |

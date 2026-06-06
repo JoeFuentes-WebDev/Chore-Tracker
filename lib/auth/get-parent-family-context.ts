@@ -8,8 +8,12 @@ export type ParentFamilyContext =
   | { kind: "no-family"; parentUser: User }
   | { kind: "authenticated"; parentUser: User; familyId: string };
 
+export type RequireParentFamilyResult =
+  | { ok: true; user: User; familyId: string }
+  | { ok: false; error: string };
+
 /** Resolve Clerk parent session and family membership for dashboard rendering. */
-export async function getParentFamilyContext(): Promise<ParentFamilyContext> {
+export async function getCurrentParentContext(): Promise<ParentFamilyContext> {
   const parentUser = await getClerkParentUser();
 
   if (!parentUser) {
@@ -29,5 +33,27 @@ export async function getParentFamilyContext(): Promise<ParentFamilyContext> {
     kind: "authenticated",
     parentUser,
     familyId: membership.familyId,
+  };
+}
+
+/** @deprecated Use getCurrentParentContext — kept for incremental migration. */
+export const getParentFamilyContext = getCurrentParentContext;
+
+/** Strict parent + family resolution for mutations and scoped queries. */
+export async function requireCurrentParentFamily(): Promise<RequireParentFamilyResult> {
+  const context = await getCurrentParentContext();
+
+  if (context.kind === "anonymous") {
+    return { ok: false, error: "Sign in to continue." };
+  }
+
+  if (context.kind === "no-family") {
+    return { ok: false, error: "Create a family to continue." };
+  }
+
+  return {
+    ok: true,
+    user: context.parentUser,
+    familyId: context.familyId,
   };
 }

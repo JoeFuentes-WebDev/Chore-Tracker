@@ -1,5 +1,6 @@
 import { ChoreStatus } from "@prisma/client";
 
+import type { FamilyScope } from "@/lib/family-scope";
 import { prisma } from "@/lib/prisma";
 
 export type RejectChoreResult =
@@ -7,10 +8,14 @@ export type RejectChoreResult =
   | { ok: false; error: string };
 
 /** Transition a chore from PENDING_APPROVAL back to IN_PROGRESS. */
-export async function rejectChoreById(choreId: string): Promise<RejectChoreResult> {
+export async function rejectChoreById(
+  choreId: string,
+  scope: FamilyScope,
+): Promise<RejectChoreResult> {
   const result = await prisma.chore.updateMany({
     where: {
       id: choreId,
+      familyId: scope.familyId,
       status: ChoreStatus.PENDING_APPROVAL,
     },
     data: { status: ChoreStatus.IN_PROGRESS },

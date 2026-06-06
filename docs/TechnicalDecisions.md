@@ -506,3 +506,17 @@ Each entry follows this format:
 
 **Revisit when:** V2-M5 (authorization, remove shims), future milestone for PIN return-login and QR.
 
+---
+
+## TD-V2-11 — Identity Resolution & Family Scoping (V2-M5)
+
+**Decision:** All reads and mutations resolve `familyId` from session — never from request parameters or V1 default-family shims. Parents: Clerk → `User` → `FamilyMembership`. Children: httpOnly cookie → `User` → `FamilyMembership`. Lib mutations accept a `FamilyScope` and include `familyId` in Prisma `where` clauses. Anonymous `/dashboard` redirects to `/sign-in`; `/board` without child session shows an empty state.
+
+**Alternatives:** Middleware-only protection without lib-layer scoping; retain anonymous dashboard with default family for dev.
+
+**Rationale:** Defense in depth — even if a cross-family entity id is known, mutations no-op. Removes `getDefaultFamily()` / `getDefaultChildUser()` footguns in a multi-tenant database.
+
+**Tradeoffs:** V1 anonymous dashboard demo removed. Middleware route protection deferred to M6. PIN return-login still deferred.
+
+**Revisit when:** V2-M6 (dynamic routes, middleware), schema cleanup milestone.
+

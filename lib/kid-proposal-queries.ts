@@ -13,12 +13,20 @@ function serializeProposal(proposal: Proposal): KidProposal {
   };
 }
 
-/** Kid proposals read model — scoped to child user. */
+export interface KidProposalsQueryContext {
+  childUserId: string;
+  familyId: string;
+}
+
+/** Kid proposals read model — scoped to child user and family. */
 export async function getKidProposalsData(
-  childUserId: string,
+  context: KidProposalsQueryContext,
 ): Promise<KidProposalsData> {
   const proposals = await prisma.proposal.findMany({
-    where: { proposedByUserId: childUserId },
+    where: {
+      proposedByUserId: context.childUserId,
+      familyId: context.familyId,
+    },
     orderBy: { createdAt: "desc" },
   });
 

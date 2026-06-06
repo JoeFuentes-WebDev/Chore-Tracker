@@ -1,13 +1,12 @@
 import { ChoreCreator, ChoreStatus } from "@prisma/client";
 
-import { getDefaultFamily } from "@/lib/get-default-user";
 import { prisma } from "@/lib/prisma";
 
 export interface CreateChoreInput {
   name: string;
   description?: string;
   reward: number;
-  familyId?: string;
+  familyId: string;
 }
 
 export type CreateChoreResult =
@@ -24,6 +23,10 @@ function validateCreateChoreInput(input: CreateChoreInput): string | null {
     return "Reward must be greater than zero.";
   }
 
+  if (!input.familyId) {
+    return "Family is required.";
+  }
+
   return null;
 }
 
@@ -34,9 +37,6 @@ export async function createChore(input: CreateChoreInput): Promise<CreateChoreR
     return { ok: false, error: validationError };
   }
 
-  const family = input.familyId
-    ? { id: input.familyId }
-    : await getDefaultFamily();
   const description = input.description?.trim() ?? "";
   const chore = await prisma.chore.create({
     data: {
@@ -44,7 +44,7 @@ export async function createChore(input: CreateChoreInput): Promise<CreateChoreR
       description: description.length > 0 ? description : null,
       reward: input.reward,
       status: ChoreStatus.AVAILABLE,
-      familyId: family.id,
+      familyId: input.familyId,
       createdBy: ChoreCreator.PARENT,
     },
   });

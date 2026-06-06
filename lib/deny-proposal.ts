@@ -1,5 +1,6 @@
 import { ProposalStatus } from "@prisma/client";
 
+import type { FamilyScope } from "@/lib/family-scope";
 import { prisma } from "@/lib/prisma";
 
 export type DenyProposalResult =
@@ -7,9 +8,16 @@ export type DenyProposalResult =
   | { ok: false; error: string };
 
 /** Deny a pending proposal without creating a chore. */
-export async function denyProposalById(proposalId: string): Promise<DenyProposalResult> {
+export async function denyProposalById(
+  proposalId: string,
+  scope: FamilyScope,
+): Promise<DenyProposalResult> {
   const result = await prisma.proposal.updateMany({
-    where: { id: proposalId, status: ProposalStatus.PENDING },
+    where: {
+      id: proposalId,
+      familyId: scope.familyId,
+      status: ProposalStatus.PENDING,
+    },
     data: { status: ProposalStatus.REJECTED },
   });
 

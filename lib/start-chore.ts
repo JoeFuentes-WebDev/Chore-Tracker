@@ -1,5 +1,6 @@
 import { ChoreStatus } from "@prisma/client";
 
+import type { FamilyScope } from "@/lib/family-scope";
 import { prisma } from "@/lib/prisma";
 
 export type StartChoreResult =
@@ -10,10 +11,12 @@ export type StartChoreResult =
 export async function startChoreForChild(
   choreId: string,
   userId: string,
+  scope: FamilyScope,
 ): Promise<StartChoreResult> {
   const result = await prisma.chore.updateMany({
     where: {
       id: choreId,
+      familyId: scope.familyId,
       status: ChoreStatus.CLAIMED,
       assignedUserId: userId,
     },
