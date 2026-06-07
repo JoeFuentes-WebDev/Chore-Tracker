@@ -59,7 +59,7 @@ Designed for AI-assisted implementation using Cursor milestone prompts.
 | V2-M2 | **Clerk** — parent authentication |
 | V2-M4 | Child PIN, trusted device |
 | V2-M7 | Child device recovery (reinvite) |
-| V2-M8 | Web Push (service worker, VAPID) |
+| V2-M8 | Web Push notifications |
 
 New dependencies require explicit approval before install (see `.cursorrules`).
 
@@ -237,23 +237,29 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M8 — Push Notifications
+### V2-M8 — Push Notifications Foundation
 
-**Goal:** Web push for parent and child.
+**Status:** ✓ Complete
 
-**Deliverables:**
+**Goal:** Action-oriented Web Push for key family events.
 
-- Permission flow
-- Subscription management (`PushSubscription` storage)
-- Notification delivery on chore events
-- Parent and child notification paths
+**Delivered:**
 
-**Out of scope:** SMS (future backlog)
+- `PushSubscription` model (multiple devices per user)
+- `sendNotification()` abstraction — Web Push only in M8
+- Service worker (`public/sw.js`) + best-effort subscribe on `/parent` and `/child`
+- `POST /api/push/subscribe` — session-scoped registration
+- Stale subscription cleanup on push 404/410
+- Dispatch hooks for 5 events (see TD-V2-15)
+
+**Not in M8:** Balance paid notifications, notification prefs/history/settings, SMS
+
+**Reference:** TD-V2-15 in `TechnicalDecisions.md`
 
 **Done when:**
 
-- User can opt in to push
-- Key events deliver notifications to subscribed devices
+- Subscribed parent/child receive pushes for scoped events ✓
+- Mutations never blocked by notify failures ✓
 
 ---
 
@@ -328,6 +334,10 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 - Drop deprecated `Child` table and legacy `childId` columns (TD-V2-06, TD-V2-07)
 
+### Settlement / multi-child (future)
+
+- Current `payBalance` behavior assumes a single-child household. Future multi-child support will require child-specific earnings, balances, and settlement workflows.
+
 ---
 
 ## Definition of Done for V2
@@ -360,6 +370,6 @@ A new family can:
 | V2-M6 | Identity URLs (superseded by M6.1) | ✓ Complete |
 | V2-M6.1 | Flat `/parent` and `/child` routes | ✓ Complete |
 | V2-M7 | Child device recovery | ✓ Complete |
-| V2-M8 | Push notifications | Pending |
+| V2-M8 | Push notifications foundation | ✓ Complete |
 | V2-M9 | Family management | Pending |
 | V2-M10 | User settings | Pending |

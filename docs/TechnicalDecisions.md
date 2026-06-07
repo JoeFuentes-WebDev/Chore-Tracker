@@ -564,3 +564,33 @@ Each entry follows this format:
 
 **Revisit when:** Optional PIN return-login milestone; push notifications (M8) for parent-initiated nudges.
 
+---
+
+## TD-V2-15 — Push Notifications & Notification Abstraction (V2-M8)
+
+**Decision:** Family notifications use a single `sendNotification()` entry point. V2-M8 implements **Web Push only** via `PushSubscription` rows per user (multiple devices allowed). SMS is explicitly deferred to V3; email is not planned for V2. Dispatch is **fire-and-forget** from server actions after successful mutations — delivery failure never blocks chore/proposal workflows.
+
+**Minimal notification philosophy:** Notify only when someone must act or receives a meaningful outcome.
+
+| Event | Direction |
+|-------|-----------|
+| New AVAILABLE chore | Parent → all children |
+| Proposal submitted | Child → all parents |
+| Chore completed (pending approval) | Child → all parents |
+| Proposal approved | Parent → proposing child |
+| Proposal denied | Parent → proposing child |
+
+**Explicitly excluded from M8:** balance paid, chore claimed/started, dashboard noise.
+
+**Stale subscriptions:** `web-push` 404/410 responses delete the `PushSubscription` row automatically.
+
+**Alternatives:** SMS via Twilio (V1 stub); unified `NotificationLog` for all channels; user notification preferences.
+
+**Rationale:** Push is free, fits PWA, and avoids SMS cost/complexity in V2. Single abstraction allows V3 SMS without changing dispatch call sites.
+
+**Tradeoffs:** No prefs — all subscribed devices receive all event types. Subscribe is best-effort on page load (no settings UI). Requires VAPID keys and granted browser permission.
+
+**Future note:** `payBalance` today settles family-wide approved chores; multi-child households will need per-child settlement before pay-related notifications make sense.
+
+**Revisit when:** V3 SMS channel; notification preferences milestone; multi-child settlement.
+

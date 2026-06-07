@@ -16,6 +16,11 @@ import {
 import { createChildInvitation as createChildInvitationRecord } from "@/lib/create-invitation";
 import { createRecoveryInvitation } from "@/lib/create-recovery-invitation";
 import { denyProposalById } from "@/lib/deny-proposal";
+import {
+  dispatchChoreAssigned,
+  dispatchProposalApproved,
+  dispatchProposalDenied,
+} from "@/lib/notifications/dispatch";
 import { getInviteUrl } from "@/lib/invitations/invite-url";
 import { rejectChoreById } from "@/lib/reject-chore";
 import { settleApprovedBalance } from "@/lib/settle-balance";
@@ -172,6 +177,8 @@ export async function createChore(
       return result;
     }
 
+    void dispatchChoreAssigned(parent.familyId, result.choreId).catch(() => {});
+
     revalidateChildSurfaces();
     return result;
   } catch {
@@ -197,6 +204,8 @@ export async function acceptProposal(proposalId: string): Promise<
     if (!result.ok) {
       return result;
     }
+
+    void dispatchProposalApproved(proposalId).catch(() => {});
 
     revalidateParentDashboard();
     revalidateChildSurfaces();
@@ -224,6 +233,8 @@ export async function denyProposal(proposalId: string): Promise<
     if (!result.ok) {
       return result;
     }
+
+    void dispatchProposalDenied(proposalId).catch(() => {});
 
     revalidateParentDashboard();
     revalidateChildSurfaces();

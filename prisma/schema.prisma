@@ -48,7 +48,10 @@ enum NotificationEvent {
   CHORE_CLAIMED
   CHORE_UNCLAIMED
   CHORE_COMPLETED
+  CHORE_ASSIGNED
   PROPOSAL_SUBMITTED
+  PROPOSAL_APPROVED
+  PROPOSAL_DENIED
   PIN_RESET
 }
 
@@ -81,10 +84,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  membership     FamilyMembership?
-  assignedChores Chore[]           @relation("ChoreAssignee")
-  proposals      Proposal[]        @relation("ProposalAuthor")
-  invitations    Invitation[]      @relation("RecoveryInvitations")
+  membership        FamilyMembership?
+  assignedChores    Chore[]             @relation("ChoreAssignee")
+  proposals         Proposal[]          @relation("ProposalAuthor")
+  invitations       Invitation[]        @relation("RecoveryInvitations")
+  pushSubscriptions PushSubscription[]
 }
 
 model FamilyMembership {
@@ -113,6 +117,19 @@ model Invitation {
   user   User?  @relation("RecoveryInvitations", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([familyId])
+  @@index([userId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 

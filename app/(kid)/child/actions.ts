@@ -11,6 +11,10 @@ import {
   type CreateProposalInput,
 } from "@/lib/create-proposal";
 import { finishChoreForChild } from "@/lib/finish-chore";
+import {
+  dispatchChoreCompleted,
+  dispatchProposalSubmitted,
+} from "@/lib/notifications/dispatch";
 import { startChoreForChild } from "@/lib/start-chore";
 
 export async function claimChore(choreId: string): Promise<
@@ -85,6 +89,8 @@ export async function finishChore(choreId: string): Promise<
       return result;
     }
 
+    void dispatchChoreCompleted(child.familyId, choreId, child.user.id).catch(() => {});
+
     revalidateChildBoard();
     revalidateParentDashboard();
     return { ok: true };
@@ -112,6 +118,8 @@ export async function createProposal(input: CreateProposalInput): Promise<
     if (!result.ok) {
       return result;
     }
+
+    void dispatchProposalSubmitted(child.familyId, result.proposalId).catch(() => {});
 
     revalidateChildBoard();
     revalidateParentDashboard();
