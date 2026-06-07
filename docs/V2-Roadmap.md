@@ -97,7 +97,7 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 - `@clerk/nextjs` integration (ClerkProvider, clerkMiddleware)
 - `/sign-in`, `/sign-up` (email/password)
-- `/auth/parent/continue` — centralized post-auth redirect
+- `/auth/parent/continue` — centralized post-auth redirect (Clerk fallback → continue → `/parent`)
 - `User.clerkUserId` sync via `ensureParentUser()`
 - Parent auth header on dashboard (sign in / sign out)
 - Empty state when authenticated parent has no family

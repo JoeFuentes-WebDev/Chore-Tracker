@@ -470,7 +470,7 @@ Each entry follows this format:
 
 **Tradeoffs:** Two auth systems (Clerk for parents, app-managed for children). New dependency and Clerk Dashboard configuration required.
 
-**Post-auth routing:** Centralized in `lib/auth/parent-auth-paths.ts` and `/auth/parent/continue`. M2 uses temporary `/dashboard`; M6 switches `getParentPostAuthPath()` to `/parent/[slug]`.
+**Post-auth routing:** Centralized in `lib/auth/parent-auth-paths.ts` and `/auth/parent/continue`. After Clerk auth, `/auth/parent/continue` resolves the app user and redirects to `/parent` via `getParentPostAuthPath()`. Sign-in and sign-up pages set `fallbackRedirectUrl` (and cross-flow fallbacks) to `getParentPostAuthHandlerPath()` — Clerk Core 2; replaces deprecated `afterSignInUrl` / `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`. Optional env fallback: `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` and `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL`.
 
 **FamilyMembership:** Not created in M2. Authenticated parents without membership see an empty state until V2-M3.
 
