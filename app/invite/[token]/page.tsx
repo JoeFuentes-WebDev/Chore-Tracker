@@ -14,6 +14,7 @@ import { validateInvitationForAccept } from "@/lib/invitations/validate-invitati
 import { validateRecoveryInvitationForAccept } from "@/lib/invitations/validate-recovery-invitation";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
+import { getAppUrl } from "@/lib/app-url";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
 
   if (isParentInvitation(validation.invitation)) {
     const parentUser = await getClerkParentUser();
-    const invitePath = `/invite/${token}`;
+    const invitePath = `${getAppUrl()}/invite/${token}`;
     const signInPath = `${getParentSignInPath()}?redirect_url=${encodeURIComponent(invitePath)}`;
 
     return (
