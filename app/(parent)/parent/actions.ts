@@ -14,7 +14,9 @@ import {
   type CreateFamilyInput,
 } from "@/lib/create-family";
 import { createChildInvitation as createChildInvitationRecord } from "@/lib/create-invitation";
+import { createParentInvitation as createParentInvitationRecord } from "@/lib/create-parent-invitation";
 import { createRecoveryInvitation } from "@/lib/create-recovery-invitation";
+import { archiveFamilyMembership } from "@/lib/archive-family-membership";
 import { denyProposalById } from "@/lib/deny-proposal";
 import {
   dispatchChoreAssigned,
@@ -72,6 +74,87 @@ export async function createChildInvitation(): Promise<
       inviteUrl: getInviteUrl(result.token),
       expiresAt: result.expiresAt.toISOString(),
     };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function createParentInvitation(): Promise<
+  | { ok: true; inviteUrl: string; token: string; expiresAt: string }
+  | { ok: false; error: string }
+> {
+  try {
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await createParentInvitationRecord(parent.familyId);
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return {
+      ok: true,
+      token: result.token,
+      inviteUrl: getInviteUrl(result.token),
+      expiresAt: result.expiresAt.toISOString(),
+    };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function archiveChildMember(childUserId: string): Promise<
+  | { ok: true }
+  | { ok: false; error: string }
+> {
+  try {
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await archiveFamilyMembership(parent.familyId, childUserId);
+
+    if (!result.ok) {
+      return result;
+    }
+
+    revalidateParentDashboard();
+    revalidateChildSurfaces();
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function archiveParentMember(parentUserId: string): Promise<
+  | { ok: true }
+  | { ok: false; error: string }
+> {
+  try {
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    if (parentUserId === parent.user.id) {
+      return { ok: false, error: "You cannot archive yourself." };
+    }
+
+    const result = await archiveFamilyMembership(parent.familyId, parentUserId);
+
+    if (!result.ok) {
+      return result;
+    }
+
+    revalidateParentDashboard();
+    return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
   }

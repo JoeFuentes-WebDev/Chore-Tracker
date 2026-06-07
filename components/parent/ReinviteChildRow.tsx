@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { reinviteChild } from "@/app/(parent)/parent/actions";
+import { ArchiveChildButton } from "@/components/parent/ArchiveChildButton";
 import { InviteLinkResult } from "@/components/shared/InviteLinkResult";
 import { Button } from "@/components/ui/Button";
 import { FormMessage } from "@/components/ui/FormField";
@@ -55,14 +56,17 @@ export function ReinviteChildRow({ childId, childName }: ReinviteChildRowProps) 
     <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
       <div className="flex items-center justify-between gap-3">
         <p className="font-medium">{childName}</p>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleReinviteClick}
-          disabled={isPending}
-        >
-          {isPending ? "Generating…" : "Reinvite"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <ArchiveChildButton childId={childId} childName={childName} />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleReinviteClick}
+            disabled={isPending}
+          >
+            {isPending ? "Generating…" : "Reinvite"}
+          </Button>
+        </div>
       </div>
       {error ? <FormMessage variant="error">{error}</FormMessage> : null}
       {inviteUrl ? (

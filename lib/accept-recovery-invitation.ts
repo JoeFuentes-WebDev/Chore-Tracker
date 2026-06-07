@@ -1,3 +1,5 @@
+import { MembershipStatus } from "@prisma/client";
+
 import { validateInvitationForAccept } from "@/lib/invitations/validate-invitation";
 import { validateRecoveryInvitationForAccept } from "@/lib/invitations/validate-recovery-invitation";
 import { prisma } from "@/lib/prisma";
@@ -46,12 +48,13 @@ export async function acceptRecoveryInvitationByToken(
 
       const membership = await tx.familyMembership.findUnique({
         where: { userId: childUserId },
-        select: { familyId: true },
+        select: { familyId: true, status: true },
       });
 
       if (
         !membership ||
-        membership.familyId !== recoveryValidation.invitation.familyId
+        membership.familyId !== recoveryValidation.invitation.familyId ||
+        membership.status !== MembershipStatus.ACTIVE
       ) {
         throw new Error("RECOVERY_MEMBERSHIP_INVALID");
       }

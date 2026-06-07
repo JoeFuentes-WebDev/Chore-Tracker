@@ -1,4 +1,4 @@
-import { UserRole, type Invitation } from "@prisma/client";
+import { MembershipStatus, UserRole, type Invitation } from "@prisma/client";
 
 import { isRecoveryInvitation } from "@/lib/invitations/is-recovery-invitation";
 import { prisma } from "@/lib/prisma";
@@ -31,6 +31,10 @@ export async function validateRecoveryInvitationForAccept(
 
   if (membership.user.role !== UserRole.CHILD) {
     return { ok: false, error: "This invitation is invalid." };
+  }
+
+  if (membership.status !== MembershipStatus.ACTIVE) {
+    return { ok: false, error: "This invitation is no longer valid." };
   }
 
   return {

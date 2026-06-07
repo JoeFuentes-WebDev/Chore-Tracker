@@ -3,18 +3,22 @@ import { UserRole } from "@prisma/client";
 import { ACTIVE_MEMBERSHIP_WHERE } from "@/lib/membership/active-membership";
 import { prisma } from "@/lib/prisma";
 
-export interface FamilyChildListItem {
+export interface FamilyCoParentListItem {
   id: string;
   name: string;
 }
 
-/** Children in a family — for parent manage-children UI. */
-export async function getFamilyChildren(familyId: string): Promise<FamilyChildListItem[]> {
+/** Active co-parents in a family, excluding the current parent. */
+export async function getFamilyCoParents(
+  familyId: string,
+  excludeUserId: string,
+): Promise<FamilyCoParentListItem[]> {
   const memberships = await prisma.familyMembership.findMany({
     where: {
       familyId,
       ...ACTIVE_MEMBERSHIP_WHERE,
-      user: { role: UserRole.CHILD },
+      userId: { not: excludeUserId },
+      user: { role: UserRole.PARENT },
     },
     include: { user: { select: { id: true, name: true } } },
     orderBy: { user: { name: "asc" } },

@@ -594,3 +594,32 @@ Each entry follows this format:
 
 **Revisit when:** V3 SMS channel; notification preferences milestone; multi-child settlement.
 
+---
+
+## TD-V2-16 — Family Membership Lifecycle (V2-M9)
+
+**Decision:** `FamilyMembership` uses an `ACTIVE` / `ARCHIVED` lifecycle. Archive means **no longer participating in the active household** — not delete. Users, memberships, chores, proposals, and earnings rows are never physically removed.
+
+**Archive effects:**
+
+- Excluded from active family queries (children list, co-parent list, notification recipients)
+- Cannot use parent/child session surfaces (archived parent sees blocked empty state; archived child cookie rejected)
+- Cannot receive recovery/reinvite invitations
+- Cannot accept new invitations while an archived membership row exists (`userId @unique`)
+
+**Parent invitation:** Net-new parent invites (`Invitation.role = PARENT`, `userId null`). Invitee signs in via Clerk, accepts on `/invite/[token]`, receives `FamilyMembership` with `ACTIVE` status. All active parents are **peers** — no owner, admin, or permission hierarchy in V2.
+
+**Archive guardrails:**
+
+- Cannot archive the last active parent in a family
+- Cannot archive yourself (co-parent archive only)
+- Confirmation required before archive (destructive household action)
+
+**Alternatives:** Hard delete members; soft-delete `User` rows; restore archived members in M9.
+
+**Rationale:** Preserves earnings/chore history for accountability. Archive cleanly removes participation without cascading deletes or orphaning financial records.
+
+**Tradeoffs:** Archived users remain blocked from joining another family until a future restore milestone (membership row retained). No dedicated roster UI in M9 — minimal inline controls on `/parent` only.
+
+**Revisit when:** Restore archived members; permanent delete; family roster UI; advanced permissions.
+

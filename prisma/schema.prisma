@@ -55,6 +55,11 @@ enum NotificationEvent {
   PIN_RESET
 }
 
+enum MembershipStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 // ---------------------------------------------------------------------------
 // Identity & tenancy (V2-M1)
 // ---------------------------------------------------------------------------
@@ -92,15 +97,18 @@ model User {
 }
 
 model FamilyMembership {
-  id        String   @id @default(cuid())
-  familyId  String
-  userId    String   @unique
-  createdAt DateTime @default(now())
+  id         String           @id @default(cuid())
+  familyId   String
+  userId     String           @unique
+  status     MembershipStatus @default(ACTIVE)
+  archivedAt DateTime?
+  createdAt  DateTime         @default(now())
 
   family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([familyId])
+  @@index([familyId, status])
 }
 
 model Invitation {

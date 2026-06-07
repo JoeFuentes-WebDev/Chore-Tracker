@@ -1,4 +1,5 @@
 import type { User } from "@prisma/client";
+import { MembershipStatus } from "@prisma/client";
 
 import { getClerkParentUser } from "@/lib/auth/get-clerk-parent-user";
 import { prisma } from "@/lib/prisma";
@@ -6,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 export type ParentFamilyContext =
   | { kind: "anonymous" }
   | { kind: "no-family"; parentUser: User }
+  | { kind: "archived"; parentUser: User }
   | { kind: "authenticated"; parentUser: User; familyId: string };
 
 export type RequireParentFamilyResult =
@@ -22,11 +24,15 @@ export async function getCurrentParentContext(): Promise<ParentFamilyContext> {
 
   const membership = await prisma.familyMembership.findUnique({
     where: { userId: parentUser.id },
-    select: { familyId: true },
+    select: { familyId: true, status: true },
   });
 
   if (!membership) {
     return { kind: "no-family", parentUser };
+  }
+
+  if (membership.status === MembershipStatus.ARCHIVED) {
+    return { kind: "archived", parentUser };
   }
 
   return {
@@ -49,6 +55,10 @@ export async function requireCurrentParentFamily(): Promise<RequireParentFamilyR
 
   if (context.kind === "no-family") {
     return { ok: false, error: "Create a family to continue." };
+  }
+
+  if (context.kind === "archived") {
+    return { ok: false, error: "Your membership was archived." };
   }
 
   return {

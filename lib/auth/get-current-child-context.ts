@@ -1,4 +1,5 @@
 import type { User } from "@prisma/client";
+import { MembershipStatus } from "@prisma/client";
 
 import { getChildSessionUser } from "@/lib/auth/get-child-session-user";
 import { prisma } from "@/lib/prisma";
@@ -21,10 +22,10 @@ export async function getCurrentChildContext(): Promise<ChildContext> {
 
   const membership = await prisma.familyMembership.findUnique({
     where: { userId: user.id },
-    select: { familyId: true },
+    select: { familyId: true, status: true },
   });
 
-  if (!membership) {
+  if (!membership || membership.status !== MembershipStatus.ACTIVE) {
     return { kind: "unauthenticated" };
   }
 

@@ -16,7 +16,8 @@ export function ManageChildrenPanel({ familyChildren }: ManageChildrenPanelProps
     <CardSection aria-label="Manage children">
       <p className="text-lg font-medium">Manage children</p>
       <p className="mt-2 text-sm text-muted-foreground">
-        Reinvite a child to restore access on a new device or browser.
+        Reinvite a child to restore access, or archive a child who no longer
+        participates.
       </p>
       <div className="mt-4 flex flex-col gap-3">
         {familyChildren.map((child) => (

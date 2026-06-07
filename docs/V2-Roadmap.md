@@ -263,20 +263,28 @@ New dependencies require explicit approval before install (see `.cursorrules`).
 
 ---
 
-### V2-M9 — Family Management
+### V2-M9 — Family Membership Management
 
-**Goal:** Manage household members after initial setup.
+**Goal:** Manage household membership lifecycle without deleting history.
 
 **Deliverables:**
 
-- View members
-- Invite additional children
-- Invite second parent
-- Remove member (with guardrails)
+- Invite additional parent (Clerk + membership row)
+- Archive child memberships
+- Archive parent memberships (peer parents — no hierarchy)
+- `ACTIVE` / `ARCHIVED` lifecycle on `FamilyMembership`
+- Guardrail: ≥1 active parent always
+- Archived members excluded from UI, notifications, invites, recovery
+
+**Explicitly out of scope:** restore, permanent delete, roster UI, display names, permissions
+
+**Reference:** TD-V2-16 in `TechnicalDecisions.md`
 
 **Done when:**
 
-- Family can grow beyond initial parent + first child
+- Second parent can join via invite link ✓
+- Children and co-parents can be archived with guardrails ✓
+- Historical chores/proposals/earnings preserved ✓
 
 ---
 
@@ -371,5 +379,5 @@ A new family can:
 | V2-M6.1 | Flat `/parent` and `/child` routes | ✓ Complete |
 | V2-M7 | Child device recovery | ✓ Complete |
 | V2-M8 | Push notifications foundation | ✓ Complete |
-| V2-M9 | Family management | Pending |
+| V2-M9 | Family membership management | ✓ Complete |
 | V2-M10 | User settings | Pending |

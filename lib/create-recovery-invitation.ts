@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import { MembershipStatus, UserRole } from "@prisma/client";
 import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/prisma";
@@ -25,6 +25,10 @@ export async function createRecoveryInvitation(
 
   if (membership.user.role !== UserRole.CHILD) {
     return { ok: false, error: "Child not found in this family." };
+  }
+
+  if (membership.status !== MembershipStatus.ACTIVE) {
+    return { ok: false, error: "This child is no longer active in the family." };
   }
 
   const expiresAt = new Date(Date.now() + INVITE_TTL_MS);
