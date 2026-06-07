@@ -31,6 +31,22 @@ function createPrismaClient(): PrismaClient {
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
+/** Hostname from DATABASE_URL used by the Prisma pg Pool (hostname only — no credentials). */
+export function getPrismaDatabaseHostname(): string | null {
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    return null;
+  }
+
+  try {
+    const normalized = connectionString.replace(/^postgresql:/i, "postgres:");
+    return new URL(normalized).hostname;
+  } catch {
+    return null;
+  }
+}
+
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }

@@ -5,7 +5,9 @@
 
 export type {
   Family,
-  Child,
+  User,
+  FamilyMembership,
+  Invitation,
   Chore,
   Proposal,
   NotificationLog,

@@ -1,21 +1,20 @@
-import { ParentDashboardLayout } from "@/components/layout/ParentDashboardLayout";
-import { ApprovedBalanceCard } from "@/components/parent/ApprovedBalanceCard";
-import { CreateChoreForm } from "@/components/parent/CreateChoreForm";
-import { PendingApprovalList } from "@/components/parent/PendingApprovalList";
-import { ProposalReviewList } from "@/components/parent/ProposalReviewList";
-import { getParentDashboardData } from "@/lib/parent-dashboard-queries";
+import { redirect } from "next/navigation";
+
+import { getCurrentParentContext } from "@/lib/auth/get-parent-family-context";
+import {
+  getParentDashboardPath,
+  getParentSignInPath,
+} from "@/lib/auth/parent-auth-paths";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
-  const { pendingChores, proposals, approvedBalance } = await getParentDashboardData();
+/** Legacy route — redirects to /parent. */
+export default async function LegacyDashboardPage() {
+  const context = await getCurrentParentContext();
 
-  return (
-    <ParentDashboardLayout>
-      <ApprovedBalanceCard balance={approvedBalance} />
-      <CreateChoreForm />
-      <PendingApprovalList chores={pendingChores} />
-      <ProposalReviewList proposals={proposals} />
-    </ParentDashboardLayout>
-  );
+  if (context.kind === "anonymous") {
+    redirect(getParentSignInPath());
+  }
+
+  redirect(getParentDashboardPath());
 }

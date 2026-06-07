@@ -1,6 +1,6 @@
 "use client";
 
-import { approveChore, rejectChore } from "@/app/(parent)/dashboard/actions";
+import { approveChore, rejectChore } from "@/app/(parent)/parent/actions";
 import {
   Card,
   CardContent,

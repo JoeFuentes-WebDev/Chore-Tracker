@@ -85,3 +85,18 @@ Do not introduce new dependencies without explicitly flagging it and waiting for
 - Minimal friction. Core actions reachable in as few taps as possible.
 - No confirmation dialogs except for destructive or financial actions (Pay modal, delete).
 
+## Documentation Rules
+
+After every approved milestone:
+
+- Add an entry to MilestoneArchive.md
+- Record:
+  - Milestone ID
+  - Goal
+  - Exact implementation prompt
+  - Acceptance criteria
+  - Outcome
+  - Follow-up notes
+- create a new file in /docs named Milestone_#.md with a vervatum copy of the prompt
+
+Milestone history is part of the project and must be preserved.

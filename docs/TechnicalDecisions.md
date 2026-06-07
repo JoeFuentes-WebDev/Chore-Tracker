@@ -356,3 +356,270 @@ Each entry follows this format:
 
 **Revisit when:** Payment history or per-chore settlement ships (explicitly out of scope for M12).
 
+---
+
+## V2 Technical Decisions
+
+---
+
+## TD-V2-01 — Multi-Family Architecture
+
+**Decision:** The database supports multiple families. Migrated production data retains `Family.id = "singleton"`. New families receive `cuid()` ids.
+
+**Alternatives:** Retain one-family-per-deployment (TD-05); rewrite singleton id on migration.
+
+**Rationale:** V2 requires multi-tenancy in a shared Neon database. Preserving `"singleton"` avoids cascading FK rewrites on production migration.
+
+**Tradeoffs:** One legacy id remains in the schema permanently unless a future cleanup migration rewrites it.
+
+**Revisit when:** Never for migrated production row unless a dedicated id-normalization milestone is approved.
+
+---
+
+## TD-V2-02 — User-Only Identity
+
+**Decision:** `User` is the sole identity entity. Roles are `PARENT` or `CHILD` via `UserRole` enum. No separate Parent or Child tables long-term.
+
+**Alternatives:** Keep `Child` as a profile table linked to `User`; separate Parent table.
+
+**Rationale:** Fewer concepts for onboarding, auth, and routing. One membership join path.
+
+**Tradeoffs:** Kid-specific fields (avatar, age) would require extending `User` or a profile extension table later.
+
+**Revisit when:** Kid-specific profile data beyond name/slug is required.
+
+---
+
+## TD-V2-03 — FamilyMembership Model
+
+**Decision:** `FamilyMembership` links users to families. `userId` is unique — one family per user in V2.
+
+**Alternatives:** Many-to-many membership (user in multiple families).
+
+**Rationale:** Matches household use case and simplifies session shape for V2-M2.
+
+**Tradeoffs:** Blended families or shared custody across households would require schema change.
+
+**Revisit when:** Product requires multi-family membership for a single user.
+
+---
+
+## TD-V2-04 — Family Scoping on Chore and Proposal
+
+**Decision:** `Chore.familyId` and `Proposal.familyId` are required. Authorization filtering lands in V2-M5; columns are populated in V2-M1.
+
+**Alternatives:** Infer family via `assignedUserId` / `Child.familyId` joins only.
+
+**Rationale:** Available chores have no assignee — family cannot be inferred from user FK alone.
+
+**Tradeoffs:** Mutations must set `familyId` explicitly until session-scoped helpers exist.
+
+**Revisit when:** V2-M5 authorization middleware ships.
+
+---
+
+## TD-V2-05 — UserRole vs ChoreCreator
+
+**Decision:** `UserRole` (identity) and `ChoreCreator` (provenance) are separate enums with overlapping labels (`PARENT`, `CHILD`).
+
+**Alternatives:** Single shared enum.
+
+**Rationale:** Identity role and chore authorship are different concepts; conflating enums causes import and client-boundary confusion.
+
+**Tradeoffs:** Developers must use the correct enum per context.
+
+**Revisit when:** Never — naming is intentional.
+
+---
+
+## TD-V2-06 — Child Model Deprecated (Temporary Retention)
+
+**Decision:** The V1 `Child` model is deprecated but **not dropped** in V2-M1. Application code uses `User` exclusively. `Child` rows remain for production rollback.
+
+**Alternatives:** Drop `Child` in V2-M1 (Option A); keep `Child` as permanent profile table.
+
+**Rationale:** Deployed production system — rollback to V1 app is possible while legacy table and `childId` columns exist.
+
+**Tradeoffs:** Redundant data until cleanup milestone. Must keep dual columns in sync on writes.
+
+**Revisit when:** Cleanup milestone after V2-M5 proves User-based flows in production.
+
+---
+
+## TD-V2-07 — Dual FK Transition (childId + assignedUserId)
+
+**Decision:** V2-M1 adds `assignedUserId` / `proposedByUserId` pointing to `User`. Legacy `childId` columns on `Chore` and `Proposal` are retained and kept in sync on writes. Migration preserves `Child.id` as `User.id` for existing rows.
+
+**Alternatives:** Rename-only migration with immediate `Child` drop.
+
+**Rationale:** Safer production migration and V1 app rollback path (TD-V2-06).
+
+**Tradeoffs:** Wider schema temporarily; mutations must update both FK columns when assigning.
+
+**Revisit when:** Cleanup milestone drops `childId` and `Child` table.
+
+---
+
+## TD-V2-08 — Clerk Parent Authentication (V2-M2)
+
+**Decision:** Parents authenticate via Clerk (`@clerk/nextjs`) with email/password. `User.clerkUserId` links Clerk identity to the app `User` row. Children are not Clerk users. Parent PIN auth is not used when `clerkUserId` is set.
+
+**Alternatives:** Auth.js credentials provider; custom JWT session.
+
+**Rationale:** Clerk handles sign-up, sign-in, session persistence, and password management without custom auth infrastructure. Clear separation from child PIN + trusted-device auth (V2-M4).
+
+**Tradeoffs:** Two auth systems (Clerk for parents, app-managed for children). New dependency and Clerk Dashboard configuration required.
+
+**Post-auth routing:** Centralized in `lib/auth/parent-auth-paths.ts` and `/auth/parent/continue`. After Clerk auth, `/auth/parent/continue` resolves the app user and redirects to `/parent` via `getParentPostAuthPath()`. Sign-in and sign-up pages set `fallbackRedirectUrl` (and cross-flow fallbacks) to `getParentPostAuthHandlerPath()` — Clerk Core 2; replaces deprecated `afterSignInUrl` / `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`. Optional env fallback: `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` and `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL`.
+
+**FamilyMembership:** Not created in M2. Authenticated parents without membership see an empty state until V2-M3.
+
+**Route protection:** Deferred to V2-M5. M2 middleware propagates Clerk session only.
+
+**Revisit when:** V2-M3 (family creation), V2-M5 (authorization), V2-M6 (canonical routes).
+
+---
+
+## TD-V2-09 — Parent Family Creation (V2-M3)
+
+**Decision:** Authenticated parents without a `FamilyMembership` create a family via a dashboard form. A single transaction creates `Family` + `FamilyMembership`. The creating parent is the implicit owner (no admin role field). One family per user enforced by `FamilyMembership.userId @unique`.
+
+**Alternatives:** Separate onboarding route; admin role on membership; auto-create family at Clerk sign-up.
+
+**Rationale:** Keeps M3 scope minimal. Parent must name their household. Membership gate is already in schema.
+
+**Tradeoffs:** No invite flow until M4. Chore creation must pass authenticated `familyId` — shim `getDefaultFamily()` remains for anonymous dashboard only.
+
+**Revisit when:** V2-M4 (child invitation), V2-M8 (second parent, explicit roles if needed).
+
+---
+
+## TD-V2-10 — Child Invitation and Session (V2-M4)
+
+**Decision:** Parents invite children via a time-limited URL at `/invite/[token]`. Multiple active invitations per family are allowed. On accept, the child sets name + 4-digit PIN; PIN is hashed with `bcryptjs` and stored on `User.pinHash`. A legacy `Child` row is created with the same id as the new `User` for dual-FK compatibility (TD-V2-06/07). Child session is an httpOnly cookie (`choretracker_child_uid`) set on accept; no PIN return-login in M4.
+
+**Alternatives:** Clerk for children; single active invite per family; JWT in localStorage; `/join/{token}` route.
+
+**Rationale:** Keeps child auth separate from Clerk. Cookie session is sufficient for trusted-device persistence until M5 authorization. Invite URLs use `NEXT_PUBLIC_APP_URL` for environment-correct links.
+
+**Tradeoffs:** PIN return-login and QR code deferred. Board still falls back to V1 shim when no child cookie (until M5). No route protection on `/board` yet.
+
+**Revisit when:** V2-M5 (authorization, remove shims), future milestone for PIN return-login and QR.
+
+---
+
+## TD-V2-11 — Identity Resolution & Family Scoping (V2-M5)
+
+**Decision:** All reads and mutations resolve `familyId` from session — never from request parameters or V1 default-family shims. Parents: Clerk → `User` → `FamilyMembership`. Children: httpOnly cookie → `User` → `FamilyMembership`. Lib mutations accept a `FamilyScope` and include `familyId` in Prisma `where` clauses. Anonymous `/dashboard` redirects to `/sign-in`; `/board` without child session shows an empty state.
+
+**Alternatives:** Middleware-only protection without lib-layer scoping; retain anonymous dashboard with default family for dev.
+
+**Rationale:** Defense in depth — even if a cross-family entity id is known, mutations no-op. Removes `getDefaultFamily()` / `getDefaultChildUser()` footguns in a multi-tenant database.
+
+**Tradeoffs:** V1 anonymous dashboard demo removed. Middleware route protection deferred to M6. PIN return-login still deferred.
+
+**Revisit when:** V2-M6 (dynamic routes, middleware), schema cleanup milestone.
+
+---
+
+## TD-V2-12 — Human-Friendly Identity URLs (V2-M6)
+
+**Decision:** Canonical parent and child surfaces live at `/parent/[slug]` and `/child/[slug]`. Legacy `/dashboard` and `/board` redirect to the session user's slug URL. Route `slug` is presentation only — identity, authorization, and `familyId` always come from session resolution (TD-V2-11). Mismatched slug redirects to the session user's canonical path.
+
+**Alternatives:** Nested paths (`/parent/[slug]/dashboard`); family slugs in URLs; authorize by slug param.
+
+**Rationale:** Human-readable bookmarks without exposing family as a public routing concept. Preserves M5 security model.
+
+**Tradeoffs:** Server actions must revalidate canonical paths plus legacy redirects. Parent actions affecting child data use layout-level revalidation under `/child`.
+
+**Revisit when:** Additional parent/child sub-routes (manage, settings) migrate under same slug prefix.
+
+---
+
+## TD-V2-13 — Flat Identity Routes (V2-M6.1)
+
+**Decision:** Canonical surfaces are `/parent` and `/child` with no user slug in the URL. Legacy `/dashboard`, `/board`, `/parent/[slug]`, and `/child/[slug]` redirect to flat routes. Session resolution (TD-V2-11) remains the sole authority for identity and family scoping. `User.slug` is retained in schema and generation logic but is not used for routing.
+
+**Alternatives:** Keep slug URLs (TD-V2-12); family slugs in URLs.
+
+**Rationale:** Private family app — display names belong in UI, not URLs. M5 already scoped all data by session; slugs added no security value.
+
+**Tradeoffs:** TD-V2-12 slug URLs deprecated via compatibility redirects only.
+
+**Revisit when:** Never for routing — slug column may be repurposed or dropped in schema cleanup milestone.
+
+---
+
+## TD-V2-14 — Child Identity & Recovery Model (V2-M7)
+
+**Decision:** Normal child usage is identity via a long-lived httpOnly session cookie (`choretracker_child_uid`, ~400 days). The cookie is convenience-oriented — not a security inactivity timeout. Children who return after weeks or months retain access if the cookie is still present. When the cookie is lost (new device, cleared browser data), the child sees `ChildSessionEmptyState` on `/child` with no self-service recovery. Parents restore access by generating a recovery invitation (`Invitation.userId` linked to existing child); accept issues a fresh cookie only — no new User, FamilyMembership, or Child rows.
+
+**Alternatives:** Child login screen; forgot/reset PIN; PIN re-entry on recovery; session cookies without maxAge (browser session only).
+
+**Rationale:** Parents control family membership. Children are not Clerk users. PIN is collected at onboarding and stored hashed but has no login flow — PIN recovery would require child self-service auth explicitly rejected by product model.
+
+**Security:** Recovery invites are single-use, expiring, family-scoped, and child-scoped. Accept re-verifies FamilyMembership before setting cookie. Net-new invites (`userId` null) remain separate onboarding path.
+
+**Tradeoffs:** Lost cookie requires parent action. Long-lived cookie on shared devices is a household trust assumption (acceptable for private family PWA).
+
+**Revisit when:** Optional PIN return-login milestone; push notifications (M8) for parent-initiated nudges.
+
+---
+
+## TD-V2-15 — Push Notifications & Notification Abstraction (V2-M8)
+
+**Decision:** Family notifications use a single `sendNotification()` entry point. V2-M8 implements **Web Push only** via `PushSubscription` rows per user (multiple devices allowed). SMS is explicitly deferred to V3; email is not planned for V2. Dispatch is **fire-and-forget** from server actions after successful mutations — delivery failure never blocks chore/proposal workflows.
+
+**Minimal notification philosophy:** Notify only when someone must act or receives a meaningful outcome.
+
+| Event | Direction |
+|-------|-----------|
+| New AVAILABLE chore | Parent → all children |
+| Proposal submitted | Child → all parents |
+| Chore completed (pending approval) | Child → all parents |
+| Proposal approved | Parent → proposing child |
+| Proposal denied | Parent → proposing child |
+
+**Explicitly excluded from M8:** balance paid, chore claimed/started, dashboard noise.
+
+**Stale subscriptions:** `web-push` 404/410 responses delete the `PushSubscription` row automatically.
+
+**Alternatives:** SMS via Twilio (V1 stub); unified `NotificationLog` for all channels; user notification preferences.
+
+**Rationale:** Push is free, fits PWA, and avoids SMS cost/complexity in V2. Single abstraction allows V3 SMS without changing dispatch call sites.
+
+**Tradeoffs:** No prefs — all subscribed devices receive all event types. Subscribe is best-effort on page load (no settings UI). Requires VAPID keys and granted browser permission.
+
+**Future note:** `payBalance` today settles family-wide approved chores; multi-child households will need per-child settlement before pay-related notifications make sense.
+
+**Revisit when:** V3 SMS channel; notification preferences milestone; multi-child settlement.
+
+---
+
+## TD-V2-16 — Family Membership Lifecycle (V2-M9)
+
+**Decision:** `FamilyMembership` uses an `ACTIVE` / `ARCHIVED` lifecycle. Archive means **no longer participating in the active household** — not delete. Users, memberships, chores, proposals, and earnings rows are never physically removed.
+
+**Archive effects:**
+
+- Excluded from active family queries (children list, co-parent list, notification recipients)
+- Cannot use parent/child session surfaces (archived parent sees blocked empty state; archived child cookie rejected)
+- Cannot receive recovery/reinvite invitations
+- Cannot accept new invitations while an archived membership row exists (`userId @unique`)
+
+**Parent invitation:** Net-new parent invites (`Invitation.role = PARENT`, `userId null`). Invitee signs in via Clerk, accepts on `/invite/[token]`, receives `FamilyMembership` with `ACTIVE` status. All active parents are **peers** — no owner, admin, or permission hierarchy in V2.
+
+**Archive guardrails:**
+
+- Cannot archive the last active parent in a family
+- Cannot archive yourself (co-parent archive only)
+- Confirmation required before archive (destructive household action)
+
+**Alternatives:** Hard delete members; soft-delete `User` rows; restore archived members in M9.
+
+**Rationale:** Preserves earnings/chore history for accountability. Archive cleanly removes participation without cascading deletes or orphaning financial records.
+
+**Tradeoffs:** Archived users remain blocked from joining another family until a future restore milestone (membership row retained). No dedicated roster UI in M9 — minimal inline controls on `/parent` only.
+
+**Revisit when:** Restore archived members; permanent delete; family roster UI; advanced permissions.
+

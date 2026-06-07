@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { acceptProposal, denyProposal } from "@/app/(parent)/dashboard/actions";
+import { acceptProposal, denyProposal } from "@/app/(parent)/parent/actions";
 import {
   Card,
   CardContent,

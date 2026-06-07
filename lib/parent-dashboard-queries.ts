@@ -9,18 +9,24 @@ import type {
 } from "@/lib/parent-dashboard-types";
 
 /** Parent dashboard read model — pending approvals, proposals, and approved balance. */
-export async function getParentDashboardData(): Promise<ParentDashboardData> {
+export async function getParentDashboardData(
+  familyId: string,
+): Promise<ParentDashboardData> {
   const [chores, proposals, approvedBalance] = await Promise.all([
     prisma.chore.findMany({
-      where: { status: ChoreStatus.PENDING_APPROVAL },
-      include: { child: { select: { name: true } } },
+      where: {
+        familyId,
+        status: ChoreStatus.PENDING_APPROVAL,
+      },
+      include: { assignee: { select: { name: true } } },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.proposal.findMany({
-      include: { child: { select: { name: true } } },
+      where: { familyId },
+      include: { author: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    getParentApprovedBalance(),
+    getParentApprovedBalance(familyId),
   ]);
 
   const pendingChores: ParentPendingChore[] = chores.map((chore) => ({
@@ -28,7 +34,7 @@ export async function getParentDashboardData(): Promise<ParentDashboardData> {
     name: chore.name,
     description: chore.description,
     reward: Number(chore.reward),
-    childName: chore.child?.name ?? "Unknown",
+    childName: chore.assignee?.name ?? "Unknown",
     submittedAt: chore.updatedAt.toISOString(),
   }));
 
@@ -37,7 +43,7 @@ export async function getParentDashboardData(): Promise<ParentDashboardData> {
     name: proposal.name,
     description: null,
     askingReward: Number(proposal.askingReward),
-    childName: proposal.child.name,
+    childName: proposal.author.name,
     status: proposal.status,
     createdAt: proposal.createdAt.toISOString(),
   }));

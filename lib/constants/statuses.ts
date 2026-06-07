@@ -3,6 +3,13 @@
  * Values match Prisma schema enums; server code may still use @prisma/client.
  */
 
+export const UserRole = {
+  PARENT: "PARENT",
+  CHILD: "CHILD",
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
 export const ChoreStatus = {
   AVAILABLE: "AVAILABLE",
   CLAIMED: "CLAIMED",
@@ -41,9 +48,20 @@ export const NotificationEvent = {
   CHORE_CLAIMED: "CHORE_CLAIMED",
   CHORE_UNCLAIMED: "CHORE_UNCLAIMED",
   CHORE_COMPLETED: "CHORE_COMPLETED",
+  CHORE_ASSIGNED: "CHORE_ASSIGNED",
   PROPOSAL_SUBMITTED: "PROPOSAL_SUBMITTED",
+  PROPOSAL_APPROVED: "PROPOSAL_APPROVED",
+  PROPOSAL_DENIED: "PROPOSAL_DENIED",
   PIN_RESET: "PIN_RESET",
 } as const;
 
 export type NotificationEvent =
   (typeof NotificationEvent)[keyof typeof NotificationEvent];
+
+export const MembershipStatus = {
+  ACTIVE: "ACTIVE",
+  ARCHIVED: "ARCHIVED",
+} as const;
+
+export type MembershipStatus =
+  (typeof MembershipStatus)[keyof typeof MembershipStatus];

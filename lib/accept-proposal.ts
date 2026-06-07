@@ -5,6 +5,7 @@ import {
   type Proposal,
 } from "@prisma/client";
 
+import type { FamilyScope } from "@/lib/family-scope";
 import { prisma } from "@/lib/prisma";
 
 export type AcceptProposalResult =
@@ -17,7 +18,9 @@ function buildAvailableChoreFromProposal(proposal: Proposal) {
     description: null as string | null,
     reward: proposal.askingReward,
     status: ChoreStatus.AVAILABLE,
+    familyId: proposal.familyId,
     createdBy: ChoreCreator.CHILD,
+    assignedUserId: null,
     childId: null,
   };
 }
@@ -25,11 +28,12 @@ function buildAvailableChoreFromProposal(proposal: Proposal) {
 /** Accept a pending proposal and create an AVAILABLE chore from it. */
 export async function acceptProposalById(
   proposalId: string,
+  scope: FamilyScope,
 ): Promise<AcceptProposalResult> {
   try {
     return await prisma.$transaction(async (tx) => {
-      const proposal = await tx.proposal.findUnique({
-        where: { id: proposalId },
+      const proposal = await tx.proposal.findFirst({
+        where: { id: proposalId, familyId: scope.familyId },
         include: { createdChore: true },
       });
 
@@ -57,7 +61,11 @@ export async function acceptProposalById(
       }
 
       const accepted = await tx.proposal.update({
-        where: { id: proposalId, status: ProposalStatus.PENDING },
+        where: {
+          id: proposalId,
+          familyId: scope.familyId,
+          status: ProposalStatus.PENDING,
+        },
         data: {
           status: ProposalStatus.ACCEPTED,
           createdChore: {

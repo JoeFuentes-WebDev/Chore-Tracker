@@ -6,6 +6,7 @@ export interface CreateChoreInput {
   name: string;
   description?: string;
   reward: number;
+  familyId: string;
 }
 
 export type CreateChoreResult =
@@ -20,6 +21,10 @@ function validateCreateChoreInput(input: CreateChoreInput): string | null {
 
   if (!Number.isFinite(input.reward) || input.reward <= 0) {
     return "Reward must be greater than zero.";
+  }
+
+  if (!input.familyId) {
+    return "Family is required.";
   }
 
   return null;
@@ -39,6 +44,7 @@ export async function createChore(input: CreateChoreInput): Promise<CreateChoreR
       description: description.length > 0 ? description : null,
       reward: input.reward,
       status: ChoreStatus.AVAILABLE,
+      familyId: input.familyId,
       createdBy: ChoreCreator.PARENT,
     },
   });

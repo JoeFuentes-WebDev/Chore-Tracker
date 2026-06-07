@@ -1,5 +1,6 @@
 import { ChoreStatus } from "@prisma/client";
 
+import type { FamilyScope } from "@/lib/family-scope";
 import { prisma } from "@/lib/prisma";
 
 export type SettleBalanceResult =
@@ -7,10 +8,13 @@ export type SettleBalanceResult =
   | { ok: false; error: string };
 
 /** Mark all approved unpaid chores as paid in a single transaction. */
-export async function settleApprovedBalance(): Promise<SettleBalanceResult> {
+export async function settleApprovedBalance(
+  scope: FamilyScope,
+): Promise<SettleBalanceResult> {
   const settledCount = await prisma.$transaction(async (tx) => {
     const updated = await tx.chore.updateMany({
       where: {
+        familyId: scope.familyId,
         status: ChoreStatus.APPROVED,
         paid: false,
       },
