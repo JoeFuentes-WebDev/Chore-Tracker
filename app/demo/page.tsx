@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
+import { DemoSessionStarter } from "@/components/demo/DemoSessionStarter";
 import { buttonVariants } from "@/components/ui/Button";
 import { getChildBoardPath } from "@/lib/auth/child-auth-paths";
 import { getParentDashboardPath } from "@/lib/auth/parent-auth-paths";
@@ -13,7 +13,7 @@ export default async function DemoPage() {
   const demo = await getDemoContext();
 
   if (demo.kind !== "active") {
-    redirect("/demo/init");
+    return <DemoSessionStarter />;
   }
 
   return (

@@ -14,7 +14,7 @@ export default async function ChildPage() {
   const context = await getCurrentChildContext();
 
   if (context.kind === "demo-expired") {
-    redirect("/demo/init");
+    redirect("/demo");
   }
 
   if (context.kind === "unauthenticated") {

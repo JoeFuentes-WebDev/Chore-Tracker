@@ -17,7 +17,7 @@ export default async function ParentPage() {
   const context = await getCurrentParentContext();
 
   if (context.kind === "demo-expired") {
-    redirect("/demo/init");
+    redirect("/demo");
   }
 
   if (context.kind === "anonymous") {
