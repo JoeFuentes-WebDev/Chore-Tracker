@@ -1,4 +1,4 @@
-import { startDemoOver } from "@/app/demo/actions";
+import { DemoStartOverButton } from "@/components/demo/DemoSessionStarter";
 import { isDemoActive } from "@/lib/demo/is-demo-active";
 import { cn } from "@/lib/utils";
 
@@ -15,14 +15,7 @@ export async function DemoBanner() {
       )}
     >
       <p className="text-muted-foreground">You&apos;re in demo mode</p>
-      <form action={startDemoOver}>
-        <button
-          type="submit"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
-        >
-          Start over
-        </button>
-      </form>
+      <DemoStartOverButton />
     </div>
   );
 }

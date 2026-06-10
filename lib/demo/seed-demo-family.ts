@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import {
   ChoreCreator,
   ChoreStatus,
@@ -5,17 +7,20 @@ import {
   UserRole,
 } from "@prisma/client";
 
-import { generateUniqueUserSlug } from "@/lib/auth/generate-user-slug";
 import { prisma } from "@/lib/prisma";
 
 export interface SeedDemoFamilyResult {
   familyId: string;
 }
 
+function createDemoSlug(prefix: string): string {
+  return `${prefix}-${randomUUID().slice(0, 8)}`;
+}
+
 /** Create an isolated demo family with preset parent, child, chores, and proposal. */
 export async function seedDemoFamily(): Promise<SeedDemoFamilyResult> {
-  const parentSlug = await generateUniqueUserSlug("Demo Parent", null);
-  const childSlug = await generateUniqueUserSlug("Demo Child", null);
+  const parentSlug = createDemoSlug("demo-parent");
+  const childSlug = createDemoSlug("demo-child");
 
   const family = await prisma.$transaction(async (tx) => {
     const createdFamily = await tx.family.create({
