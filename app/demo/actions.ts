@@ -1,23 +1,36 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 import { clearDemoSession, setDemoSessionFamilyId } from "@/lib/demo/demo-session";
-import { getDemoContext } from "@/lib/demo/get-demo-context";
-import { seedDemoFamily } from "@/lib/demo/seed-demo-family";
+import { prepareDemoSession } from "@/lib/demo/prepare-demo-session";
 
-export async function initializeDemoSession(): Promise<void> {
-  const demo = await getDemoContext();
+export type InitializeDemoSessionResult =
+  | { ok: true }
+  | { ok: false; error: string };
 
-  if (demo.kind !== "active") {
-    const { familyId } = await seedDemoFamily();
-    await setDemoSessionFamilyId(familyId);
+export async function initializeDemoSession(): Promise<InitializeDemoSessionResult> {
+  const result = await prepareDemoSession();
+
+  if (!result.ok) {
+    return { ok: false, error: result.error };
   }
 
-  redirect("/demo");
+  try {
+    await setDemoSessionFamilyId(result.familyId);
+    revalidatePath("/demo");
+    return { ok: true };
+  } catch (error) {
+    console.error("[demo-init-cookie]", error);
+
+    return {
+      ok: false,
+      error: "Demo data was created but the session cookie could not be saved.",
+    };
+  }
 }
 
 export async function startDemoOver(): Promise<void> {
   await clearDemoSession();
-  redirect("/demo");
+  revalidatePath("/demo");
 }

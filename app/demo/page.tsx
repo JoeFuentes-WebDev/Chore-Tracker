@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { DemoSessionStarter } from "@/components/demo/DemoSessionStarter";
+import { DemoSessionCleanup, DemoSessionStarter } from "@/components/demo/DemoSessionStarter";
 import { buttonVariants } from "@/components/ui/Button";
 import { getChildBoardPath } from "@/lib/auth/child-auth-paths";
 import { getParentDashboardPath } from "@/lib/auth/parent-auth-paths";
@@ -8,6 +8,7 @@ import { getDemoContext } from "@/lib/demo/get-demo-context";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export default async function DemoPage() {
   const demo = await getDemoContext();
@@ -17,7 +18,9 @@ export default async function DemoPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-8 px-4 py-8">
+    <>
+      <DemoSessionCleanup />
+      <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-8 px-4 py-8">
       <div className="text-center">
         <h1 className="text-3xl font-semibold">Try Chore Tracker</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -39,5 +42,6 @@ export default async function DemoPage() {
         </Link>
       </div>
     </main>
+    </>
   );
 }

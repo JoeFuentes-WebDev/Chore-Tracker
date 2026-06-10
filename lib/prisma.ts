@@ -17,11 +17,12 @@ function createPrismaClient(): PrismaClient {
     globalForPrisma.pool ??
     new Pool({
       connectionString: process.env.DATABASE_URL,
+      max: 1,
+      connectionTimeoutMillis: 10_000,
+      idleTimeoutMillis: 20_000,
     });
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.pool = pool;
-  }
+  globalForPrisma.pool = pool;
 
   const adapter = new PrismaPg(pool);
 
@@ -44,10 +45,8 @@ function getPrismaClient(): PrismaClient {
 
   const client = createPrismaClient();
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
-    globalForPrisma.prismaSchemaKey = schemaKey;
-  }
+  globalForPrisma.prisma = client;
+  globalForPrisma.prismaSchemaKey = schemaKey;
 
   return client;
 }
@@ -69,4 +68,3 @@ export function getPrismaDatabaseHostname(): string | null {
     return null;
   }
 }
-

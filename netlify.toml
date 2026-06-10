@@ -1,0 +1,5 @@
+[build]
+  command = "npm run db:migrate:deploy && npm run build"
+
+[functions]
+  node_bundler = "esbuild"
