@@ -67,6 +67,7 @@ enum MembershipStatus {
 model Family {
   id        String   @id @default(cuid())
   name      String
+  isDemo    Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -75,6 +76,8 @@ model Family {
   chores      Chore[]
   proposals   Proposal[]
   children    Child[] // deprecated — TD-V2-06
+
+  @@index([isDemo])
 }
 
 model User {

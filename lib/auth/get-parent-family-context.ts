@@ -1,11 +1,13 @@
 import type { User } from "@prisma/client";
 import { MembershipStatus } from "@prisma/client";
 
+import { getDemoContext } from "@/lib/demo/get-demo-context";
 import { getClerkParentUser } from "@/lib/auth/get-clerk-parent-user";
 import { prisma } from "@/lib/prisma";
 
 export type ParentFamilyContext =
   | { kind: "anonymous" }
+  | { kind: "demo-expired" }
   | { kind: "no-family"; parentUser: User }
   | { kind: "archived"; parentUser: User }
   | { kind: "authenticated"; parentUser: User; familyId: string };
@@ -16,6 +18,20 @@ export type RequireParentFamilyResult =
 
 /** Resolve Clerk parent session and family membership for dashboard rendering. */
 export async function getCurrentParentContext(): Promise<ParentFamilyContext> {
+  const demo = await getDemoContext();
+
+  if (demo.kind === "active") {
+    return {
+      kind: "authenticated",
+      parentUser: demo.parentUser,
+      familyId: demo.familyId,
+    };
+  }
+
+  if (demo.kind === "expired") {
+    return { kind: "demo-expired" };
+  }
+
   const parentUser = await getClerkParentUser();
 
   if (!parentUser) {
@@ -48,6 +64,10 @@ export const getParentFamilyContext = getCurrentParentContext;
 /** Strict parent + family resolution for mutations and scoped queries. */
 export async function requireCurrentParentFamily(): Promise<RequireParentFamilyResult> {
   const context = await getCurrentParentContext();
+
+  if (context.kind === "demo-expired") {
+    return { ok: false, error: "Your demo session expired. Start again at /demo." };
+  }
 
   if (context.kind === "anonymous") {
     return { ok: false, error: "Sign in to continue." };

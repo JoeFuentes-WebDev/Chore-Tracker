@@ -1,11 +1,13 @@
 import type { User } from "@prisma/client";
 import { MembershipStatus } from "@prisma/client";
 
+import { getDemoContext } from "@/lib/demo/get-demo-context";
 import { getChildSessionUser } from "@/lib/auth/get-child-session-user";
 import { prisma } from "@/lib/prisma";
 
 export type ChildContext =
   | { kind: "unauthenticated" }
+  | { kind: "demo-expired" }
   | { kind: "resolved"; user: User; familyId: string };
 
 export type RequireChildContextResult =
@@ -14,6 +16,20 @@ export type RequireChildContextResult =
 
 /** Resolve child session cookie to user and family membership. */
 export async function getCurrentChildContext(): Promise<ChildContext> {
+  const demo = await getDemoContext();
+
+  if (demo.kind === "active") {
+    return {
+      kind: "resolved",
+      user: demo.childUser,
+      familyId: demo.familyId,
+    };
+  }
+
+  if (demo.kind === "expired") {
+    return { kind: "demo-expired" };
+  }
+
   const user = await getChildSessionUser();
 
   if (!user) {
@@ -39,6 +55,10 @@ export async function getCurrentChildContext(): Promise<ChildContext> {
 /** Strict child + family resolution for mutations and scoped queries. */
 export async function requireCurrentChildContext(): Promise<RequireChildContextResult> {
   const context = await getCurrentChildContext();
+
+  if (context.kind === "demo-expired") {
+    return { ok: false, error: "Your demo session expired. Start again at /demo." };
+  }
 
   if (context.kind === "unauthenticated") {
     return { ok: false, error: "Join your family using an invite link." };

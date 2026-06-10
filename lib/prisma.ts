@@ -1,11 +1,16 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
   pool: Pool | undefined;
+  prismaSchemaKey: string | undefined;
 };
+
+function getPrismaSchemaKey(): string {
+  return Object.values(Prisma.FamilyScalarFieldEnum).join(",");
+}
 
 function createPrismaClient(): PrismaClient {
   const pool =
@@ -29,7 +34,25 @@ function createPrismaClient(): PrismaClient {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+function getPrismaClient(): PrismaClient {
+  const schemaKey = getPrismaSchemaKey();
+  const cached = globalForPrisma.prisma;
+
+  if (cached && globalForPrisma.prismaSchemaKey === schemaKey) {
+    return cached;
+  }
+
+  const client = createPrismaClient();
+
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+    globalForPrisma.prismaSchemaKey = schemaKey;
+  }
+
+  return client;
+}
+
+export const prisma = getPrismaClient();
 
 /** Hostname from DATABASE_URL used by the Prisma pg Pool (hostname only — no credentials). */
 export function getPrismaDatabaseHostname(): string | null {
@@ -47,6 +70,3 @@ export function getPrismaDatabaseHostname(): string | null {
   }
 }
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}

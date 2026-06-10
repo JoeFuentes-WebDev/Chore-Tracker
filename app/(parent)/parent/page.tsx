@@ -16,6 +16,10 @@ export const dynamic = "force-dynamic";
 export default async function ParentPage() {
   const context = await getCurrentParentContext();
 
+  if (context.kind === "demo-expired") {
+    redirect("/demo/init");
+  }
+
   if (context.kind === "anonymous") {
     redirect(getParentSignInPath());
   }
