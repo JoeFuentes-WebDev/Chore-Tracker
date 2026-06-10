@@ -29,6 +29,11 @@ export default function HomePage() {
             Child board
           </Button>
         </Link>
+        <Link href="/demo">
+          <Button variant="ghost" className="w-full">
+            Try demo
+          </Button>
+        </Link>
       </div>
     </main>
   );

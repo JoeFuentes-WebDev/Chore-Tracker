@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { ChildSessionEmptyState } from "@/components/child/ChildSessionEmptyState";
 import { KidBoardClient } from "@/components/child/KidBoardClient";
 import { KidBoardLayout } from "@/components/layout/KidBoardLayout";
@@ -10,6 +12,10 @@ export const dynamic = "force-dynamic";
 
 export default async function ChildPage() {
   const context = await getCurrentChildContext();
+
+  if (context.kind === "demo-expired") {
+    redirect("/demo/init");
+  }
 
   if (context.kind === "unauthenticated") {
     return (
