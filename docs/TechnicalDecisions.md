@@ -288,17 +288,17 @@ Each entry follows this format:
 
 ---
 
-## TD-23 — Kid Proposals on `/board` (Not `/propose`)
+## TD-23 — Kid Proposals on the Propose Tab
 
-**Decision:** Proposal creation form and My Proposals list live on `/board` in dedicated sections below chore lists. The `/propose` route remains unimplemented.
+**Decision:** Proposal creation form and My Proposals list live on the **Propose tab** of `/child`, switched in place via bottom navigation. The board tab shows balance, available chores, and active tasks only. The `/propose` route remains unimplemented.
 
-**Alternatives:** Implement on `/propose` only; duplicate on both routes.
+**Alternatives:** Keep proposals on the board tab; implement `/propose` as a separate routed page.
 
-**Rationale:** M10 explicitly places the flow on the Child Dashboard and separates proposals from chore sections.
+**Rationale:** Bottom navigation separates concerns without full page routing. Board stays focused on chore workflow; proposals get their own tab.
 
-**Tradeoffs:** `/propose` stub remains empty until a future routing/nav milestone.
+**Tradeoffs:** `/propose` stub route remains empty. Proposals are hidden until the user switches tabs.
 
-**Revisit when:** BottomNav wires kid navigation to `/propose` as a separate screen.
+**Revisit when:** Product requires a shareable `/propose` deep link or kid-mode routing changes.
 
 ---
 

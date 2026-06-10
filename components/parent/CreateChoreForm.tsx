@@ -12,10 +12,13 @@ import {
 } from "@/components/ui/FormField";
 import { cn } from "@/lib/utils";
 
-export function CreateChoreForm() {
+export interface CreateChoreFormProps {
+  onClose: () => void;
+}
+
+export function CreateChoreForm({ onClose }: CreateChoreFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [reward, setReward] = useState("");
@@ -32,10 +35,13 @@ export function CreateChoreForm() {
     setReward(event.currentTarget.value);
   }
 
+  function handleCancelClick() {
+    onClose();
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setSuccess(false);
 
     const parsedReward = Number.parseFloat(reward);
     startTransition(async () => {
@@ -50,10 +56,7 @@ export function CreateChoreForm() {
         return;
       }
 
-      setName("");
-      setDescription("");
-      setReward("");
-      setSuccess(true);
+      onClose();
     });
   }
 
@@ -93,15 +96,20 @@ export function CreateChoreForm() {
             disabled={isPending}
           />
         </FormField>
-        <Button type="submit" variant="primary" disabled={isPending}>
-          {isPending ? "Creating…" : "Create chore"}
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Button type="submit" variant="primary" disabled={isPending}>
+            {isPending ? "Creating…" : "Create chore"}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isPending}
+            onClick={handleCancelClick}
+          >
+            Cancel
+          </Button>
+        </div>
         {error ? <FormMessage variant="error">{error}</FormMessage> : null}
-        {success ? (
-          <FormMessage variant="success">
-            Chore created. It is now available on the child board.
-          </FormMessage>
-        ) : null}
       </form>
     </FormSection>
   );

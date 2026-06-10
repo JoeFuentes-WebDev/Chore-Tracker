@@ -9,6 +9,9 @@ import {
   revalidateParentDashboard,
 } from "@/lib/cache/revalidate-surfaces";
 import { createChore as createChoreRecord, type CreateChoreInput } from "@/lib/create-chore";
+import { deleteChore as deleteChoreRecord } from "@/lib/delete-chore";
+import { updateChore as updateChoreRecord, type UpdateChoreInput } from "@/lib/update-chore";
+import { updateParentPhone as updateParentPhoneRecord } from "@/lib/update-parent-phone";
 import {
   createFamilyForUser,
   type CreateFamilyInput,
@@ -263,7 +266,90 @@ export async function createChore(
     void dispatchChoreAssigned(parent.familyId, result.choreId).catch(() => {});
 
     revalidateChildSurfaces();
+    revalidateParentDashboard();
     return result;
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function updateChore(
+  input: Omit<UpdateChoreInput, "familyId">,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await updateChoreRecord({
+      ...input,
+      familyId: parent.familyId,
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+
+    revalidateParentDashboard();
+    revalidateChildSurfaces();
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function deleteChore(choreId: string): Promise<
+  | { ok: true }
+  | { ok: false; error: string }
+> {
+  try {
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await deleteChoreRecord({
+      choreId,
+      familyId: parent.familyId,
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+
+    revalidateParentDashboard();
+    revalidateChildSurfaces();
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Something went wrong. Please try again." };
+  }
+}
+
+export async function updateParentPhone(phone: string): Promise<
+  | { ok: true }
+  | { ok: false; error: string }
+> {
+  try {
+    const parent = await requireCurrentParentFamily();
+
+    if (!parent.ok) {
+      return parent;
+    }
+
+    const result = await updateParentPhoneRecord({
+      userId: parent.user.id,
+      phone,
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+
+    revalidateParentDashboard();
+    return { ok: true };
   } catch {
     return { ok: false, error: "Something went wrong. Please try again." };
   }

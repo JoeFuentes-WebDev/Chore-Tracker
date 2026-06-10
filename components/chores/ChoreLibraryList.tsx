@@ -1,15 +1,26 @@
-"use client";
+import type { FamilyChoreLibraryItem } from "@/lib/family-chore-library-types";
 
-import type { Chore } from "@/lib/types";
+import { ChoreLibraryRow } from "@/components/chores/ChoreLibraryRow";
 
 export interface ChoreLibraryListProps {
-  /** Optional pre-fetched chores; otherwise fetches GET /api/chores itself. */
-  chores?: Chore[];
+  chores: FamilyChoreLibraryItem[];
 }
 
-// Parent /manage list: fetches GET /api/chores, groups by recurring vs one-time,
-// renders the parent variant of ChoreCard (with Edit/Delete) per chore.
-export function ChoreLibraryList(_props: ChoreLibraryListProps) {
-  // TODO: fetch + group chores, handle loading/error, render parent ChoreCards.
-  return null;
+export function ChoreLibraryList({ chores }: ChoreLibraryListProps) {
+  return (
+    <section aria-label="Chore library">
+      <h2 className="mb-3 text-lg font-semibold">Chore library</h2>
+      {chores.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No chores yet. Create one to get started.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {chores.map((chore) => (
+            <ChoreLibraryRow key={chore.id} chore={chore} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
 }

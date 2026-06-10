@@ -1,11 +1,8 @@
 import { ChildSessionEmptyState } from "@/components/child/ChildSessionEmptyState";
-import { ActiveTaskList } from "@/components/tasks/ActiveTaskList";
-import { BalanceSummary } from "@/components/child/BalanceSummary";
-import { ChoreList } from "@/components/chores/ChoreList";
-import { CreateProposalForm } from "@/components/child/CreateProposalForm";
-import { MyProposalsList } from "@/components/child/MyProposalsList";
+import { KidBoardClient } from "@/components/child/KidBoardClient";
 import { KidBoardLayout } from "@/components/layout/KidBoardLayout";
 import { getCurrentChildContext } from "@/lib/auth/get-current-child-context";
+import { getKidHistoryData } from "@/lib/kid-history-queries";
 import { getKidBoardData } from "@/lib/kid-board-queries";
 import { getKidProposalsData } from "@/lib/kid-proposal-queries";
 
@@ -24,19 +21,27 @@ export default async function ChildPage() {
 
   const { user, familyId } = context;
 
-  const [{ earningsTotal, paidTotal, availableChores, activeChores }, { proposals }] =
-    await Promise.all([
-      getKidBoardData({ familyId, childUserId: user.id }),
-      getKidProposalsData({ childUserId: user.id, familyId }),
-    ]);
+  const [
+    { earningsTotal, paidTotal, availableChores, activeChores },
+    { proposals },
+    { historyChores, lifetimeEarningsTotal },
+  ] = await Promise.all([
+    getKidBoardData({ familyId, childUserId: user.id }),
+    getKidProposalsData({ childUserId: user.id, familyId }),
+    getKidHistoryData({ familyId, childUserId: user.id }),
+  ]);
 
   return (
     <KidBoardLayout>
-      <BalanceSummary outstandingTotal={earningsTotal} paidTotal={paidTotal} />
-      <ChoreList chores={availableChores} />
-      <ActiveTaskList chores={activeChores} />
-      <CreateProposalForm />
-      <MyProposalsList proposals={proposals} />
+      <KidBoardClient
+        earningsTotal={earningsTotal}
+        paidTotal={paidTotal}
+        availableChores={availableChores}
+        activeChores={activeChores}
+        proposals={proposals}
+        historyChores={historyChores}
+        lifetimeEarningsTotal={lifetimeEarningsTotal}
+      />
     </KidBoardLayout>
   );
 }
