@@ -15,7 +15,27 @@ export type RequireChildContextResult =
   | { ok: false; error: string };
 
 /** Resolve child session cookie to user and family membership. */
+
 export async function getCurrentChildContext(): Promise<ChildContext> {
+  // Real child session takes priority over demo
+  const user = await getChildSessionUser();
+
+  if (user) {
+    const membership = await prisma.familyMembership.findUnique({
+      where: { userId: user.id },
+      select: { familyId: true, status: true },
+    });
+
+    if (membership && membership.status === MembershipStatus.ACTIVE) {
+      return {
+        kind: "resolved",
+        user,
+        familyId: membership.familyId,
+      };
+    }
+  }
+
+  // Fall through to demo only if no real session
   const demo = await getDemoContext();
 
   if (demo.kind === "active") {
@@ -30,26 +50,7 @@ export async function getCurrentChildContext(): Promise<ChildContext> {
     return { kind: "demo-expired" };
   }
 
-  const user = await getChildSessionUser();
-
-  if (!user) {
-    return { kind: "unauthenticated" };
-  }
-
-  const membership = await prisma.familyMembership.findUnique({
-    where: { userId: user.id },
-    select: { familyId: true, status: true },
-  });
-
-  if (!membership || membership.status !== MembershipStatus.ACTIVE) {
-    return { kind: "unauthenticated" };
-  }
-
-  return {
-    kind: "resolved",
-    user,
-    familyId: membership.familyId,
-  };
+  return { kind: "unauthenticated" };
 }
 
 /** Strict child + family resolution for mutations and scoped queries. */
